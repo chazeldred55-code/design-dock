@@ -6,9 +6,25 @@ body {
 body {
     background: url('/media/homepage_background_cropped.jpg') no-repeat center center fixed;
     background-size: cover;
-    height: 100vh;
     color: #555;
     font-family: 'Lato', sans-serif;
+    /* Remove the forced 100vh; it causes issues with fixed headers on mobile */
+}
+
+/* Spacer to push content below fixed header */
+.header-container {
+    padding-top: 116px; /* mobile/tablet default - adjust if your mobile header is taller */
+}
+
+/* Full-page white background overlay for pages that need it */
+.overlay {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #fff;
+    z-index: -1;
 }
 
 /* from Bulma */
@@ -66,11 +82,8 @@ body {
     }
 }
 
-/* fixed top navbar only on medium and up */
+/* Desktop header spacing */
 @media (min-width: 992px) {
-    body {
-        height: calc(100vh - 164px);
-    }
 
     .fixed-top-desktop-only {
         position: fixed;
@@ -81,6 +94,6 @@ body {
     }
 
     .header-container {
-        padding-top: 164px;
+        padding-top: 164px; /* desktop header height */
     }
 }
