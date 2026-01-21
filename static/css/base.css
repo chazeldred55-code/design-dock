@@ -8,12 +8,11 @@ body {
     background-size: cover;
     color: #555;
     font-family: 'Lato', sans-serif;
-    /* Remove the forced 100vh; it causes issues with fixed headers on mobile */
 }
 
 /* Spacer to push content below fixed header */
 .header-container {
-    padding-top: 116px; /* mobile/tablet default - adjust if your mobile header is taller */
+    padding-top: 116px; /* mobile/tablet header height */
 }
 
 /* Full-page white background overlay for pages that need it */
