@@ -12,10 +12,10 @@ body {
 
 /* Spacer to push content below fixed header */
 .header-container {
-    padding-top: 116px;
+    padding-top: 116px; /* mobile/tablet header height */
 }
 
-/* White overlay */
+/* White overlay for pages */
 .overlay {
     height: 100%;
     width: 100%;
@@ -26,7 +26,7 @@ body {
     z-index: -1;
 }
 
-/* Icons */
+/* Icons (Bulma-style utility) */
 .icon {
     align-items: center;
     display: inline-flex;
@@ -43,6 +43,7 @@ body {
     width: fit-content;
 }
 
+/* Buttons */
 .shop-now-button,
 .btn-black {
     background: black;
@@ -50,11 +51,30 @@ body {
 }
 
 .shop-now-button:hover,
-.btn-black:hover {
+.shop-now-button:active,
+.shop-now-button:focus,
+.btn-black:hover,
+.btn-black:active,
+.btn-black:focus {
     background: #222;
     color: white;
 }
 
+/* Outline black button */
+.btn-outline-black {
+    background: white;
+    color: black !important;
+    border: 1px solid black;
+}
+
+.btn-outline-black:hover,
+.btn-outline-black:active,
+.btn-outline-black:focus {
+    background: black;
+    color: white !important;
+}
+
+/* Text & borders */
 .text-black {
     color: #000 !important;
 }
@@ -86,14 +106,18 @@ body {
     cursor: pointer;
 }
 
-/* Media queries */
+/* -------------------------------- Media Queries */
+
+/* Slightly larger container on xl screens */
 @media (min-width: 1200px) {
     .container {
         max-width: 80%;
     }
 }
 
+/* Desktop header spacing */
 @media (min-width: 992px) {
+
     .fixed-top-desktop-only {
         position: fixed;
         top: 0;
@@ -103,6 +127,6 @@ body {
     }
 
     .header-container {
-        padding-top: 164px;
+        padding-top: 164px; /* desktop header height */
     }
 }
