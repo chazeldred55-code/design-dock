@@ -1,25 +1,109 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
+from django.contrib import messages
 from products.models import Product
 
 
 def view_bag(request):
-    """ Display the contents of the shopping bag """
-    return render(request, 'bag/bag.html')
+    """Render the bag contents page."""
+    return render(request, "bag/bag.html")
 
 
 def add_to_bag(request, item_id):
-    """ Add a quantity of the specified product to the shopping bag """
-
+    """Add a quantity of the specified product to the shopping bag."""
     product = get_object_or_404(Product, pk=item_id)
-    quantity = int(request.POST.get('quantity'))
-    redirect_url = request.POST.get('redirect_url')
+    quantity = int(request.POST.get("quantity"))
+    redirect_url = request.POST.get("redirect_url")
 
-    bag = request.session.get('bag', {})
+    size = None
+    if "product_size" in request.POST:
+        size = request.POST["product_size"]
 
-    if item_id in bag:
-        bag[item_id] += quantity
+    bag = request.session.get("bag", {})
+
+    # Products WITH sizes
+    if size:
+        if item_id in bag:
+            if size in bag[item_id]["items_by_size"]:
+                bag[item_id]["items_by_size"][size] += quantity
+                messages.success(
+                    request,
+                    f"Updated {product.name} size {size.upper()} quantity to "
+                    f"{bag[item_id]['items_by_size'][size]}."
+                )
+            else:
+                bag[item_id]["items_by_size"][size] = quantity
+                messages.success(
+                    request,
+                    f"Added {product.name} size {size.upper()} to your bag."
+                )
+        else:
+            bag[item_id] = {"items_by_size": {size: quantity}}
+            messages.success(
+                request,
+                f"Added {product.name} size {size.upper()} to your bag."
+            )
+
+    # Products WITHOUT sizes
     else:
-        bag[item_id] = quantity
+        if item_id in bag:
+            bag[item_id] += quantity
+            messages.success(request, f"Updated {product.name} quantity to {bag[item_id]}.")
+        else:
+            bag[item_id] = quantity
+            messages.success(request, f"Added {product.name} to your bag.")
 
-    request.session['bag'] = bag
+    request.session["bag"] = bag
     return redirect(redirect_url)
+
+
+def adjust_bag(request, item_id):
+    """Adjust the quantity of the specified product to the specified amount."""
+    product = get_object_or_404(Product, pk=item_id)
+    quantity = int(request.POST.get("quantity"))
+
+    size = None
+    if "product_size" in request.POST:
+        size = request.POST["product_size"]
+
+    bag = request.session.get("bag", {})
+
+    # Sized items
+    if size:
+        if quantity > 0:
+            bag[item_id]["items_by_size"][size] = quantity
+            messages.success(
+                request,
+                f"Updated {product.name} size {size.upper()} quantity to {quantity}."
+            )
+        else:
+            bag[item_id]["items_by_size"].pop(size, None)
+            messages.success(
+                request,
+                f"Removed {product.name} size {size.upper()} from your bag."
+            )
+            if not bag[item_id]["items_by_size"]:
+                bag.pop(item_id, None)
+
+    # Non-sized items
+    else:
+        if quantity > 0:
+            bag[item_id] = quantity
+            messages.success(request, f"Updated {product.name} quantity to {quantity}.")
+        else:
+            bag.pop(item_id, None)
+            messages.success(request, f"Removed {product.name} from your bag.")
+
+    request.session["bag"] = bag
+    return redirect(reverse("view_bag"))
+
+
+def remove_from_bag(request, item_id):
+    """Remove the item entirely (non-sized items only)."""
+    product = get_object_or_404(Product, pk=item_id)
+    bag = request.session.get("bag", {})
+
+    bag.pop(item_id, None)
+    request.session["bag"] = bag
+
+    messages.success(request, f"Removed {product.name} from your bag.")
+    return redirect(reverse("view_bag"))

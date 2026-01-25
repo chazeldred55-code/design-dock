@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from django.core.management.utils import get_random_secret_key
 
-# Build paths inside the project
+# BASE DIRECTORY
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
@@ -13,22 +13,47 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # APPLICATIONS
 INSTALLED_APPS = [
+    # Django core
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+
+    # Allauth
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+
+    # Crispy forms
+    "crispy_forms",
+    "crispy_bootstrap4",
 
     # Project apps
     "products",
     "bag",
 
-    # Third-party
-    "crispy_forms",
-    "crispy_bootstrap4",
+    "home",
 ]
 
+SITE_ID = 1
+
+# AUTHENTICATION
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
+
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# CRISPY FORMS
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
@@ -75,34 +100,23 @@ DATABASES = {
     }
 }
 
-# AUTH PASSWORD VALIDATION
+# PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 # INTERNATIONALIZATION
 LANGUAGE_CODE = "en-gb"
 TIME_ZONE = "UTC"
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 
 # STATIC FILES
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # MEDIA FILES
@@ -119,6 +133,6 @@ MESSAGE_TAGS = {
     messages.ERROR: "danger",
 }
 
-# BAG / DELIVERY SETTINGS (Context Processor relies on these)
+# BAG / DELIVERY SETTINGS
 FREE_DELIVERY_THRESHOLD = 50
 STANDARD_DELIVERY_PERCENTAGE = 10
