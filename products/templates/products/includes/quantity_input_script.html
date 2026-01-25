@@ -1,0 +1,45 @@
+<script>
+    // Enable/disable +/- buttons based on input value
+    function handleEnableDisable(itemId) {
+        const currentValue = parseInt($(`#id_qty_${itemId}`).val());
+        const minusDisabled = currentValue < 2;
+        const plusDisabled = currentValue > 98;
+
+        $(`#decrement-qty_${itemId}`).prop("disabled", minusDisabled);
+        $(`#increment-qty_${itemId}`).prop("disabled", plusDisabled);
+    }
+
+    // Disable minus buttons on load (because default value is 1)
+    $(".qty_input").each(function () {
+        const itemId = $(this).data("item_id");
+        handleEnableDisable(itemId);
+    });
+
+    // Increment quantity
+    $(".increment-qty").click(function (e) {
+        e.preventDefault();
+        const closestInput = $(this).closest(".input-group").find(".qty_input");
+        let currentValue = parseInt(closestInput.val());
+        closestInput.val(currentValue + 1);
+
+        const itemId = $(this).data("item_id");
+        handleEnableDisable(itemId);
+    });
+
+    // Decrement quantity
+    $(".decrement-qty").click(function (e) {
+        e.preventDefault();
+        const closestInput = $(this).closest(".input-group").find(".qty_input");
+        let currentValue = parseInt(closestInput.val());
+        closestInput.val(currentValue - 1);
+
+        const itemId = $(this).data("item_id");
+        handleEnableDisable(itemId);
+    });
+
+    // If user types or uses arrow keys, still enforce enable/disable logic
+    $(".qty_input").change(function () {
+        const itemId = $(this).data("item_id");
+        handleEnableDisable(itemId);
+    });
+</script>
