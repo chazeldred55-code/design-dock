@@ -27,6 +27,7 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     "home",
     "products",
+    'bag',
 
     # Django core apps
     "django.contrib.admin",
