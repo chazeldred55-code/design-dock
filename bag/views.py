@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib import messages
+from django.http import HttpResponse
 from products.models import Product
 
 
@@ -98,12 +99,39 @@ def adjust_bag(request, item_id):
 
 
 def remove_from_bag(request, item_id):
-    """Remove the item entirely (non-sized items only)."""
+    """
+    Remove an item from the bag.
+    If the item has sizes, remove only the specified size (POST: product_size).
+    Otherwise remove the entire item_id.
+    Designed to be called via AJAX (jQuery $.post) and return HTTP 200.
+    """
     product = get_object_or_404(Product, pk=item_id)
     bag = request.session.get("bag", {})
 
-    bag.pop(item_id, None)
-    request.session["bag"] = bag
+    size = request.POST.get("product_size")
 
-    messages.success(request, f"Removed {product.name} from your bag.")
-    return redirect(reverse("view_bag"))
+    try:
+        # If size is provided, attempt to remove that size only
+        if size:
+            bag[item_id]["items_by_size"].pop(size, None)
+
+            # If no sizes left, remove the product key entirely
+            if not bag[item_id]["items_by_size"]:
+                bag.pop(item_id, None)
+
+            messages.success(
+                request,
+                f"Removed {product.name} size {size.upper()} from your bag."
+            )
+
+        # No size provided -> remove whole item_id
+        else:
+            bag.pop(item_id, None)
+            messages.success(request, f"Removed {product.name} from your bag.")
+
+        request.session["bag"] = bag
+        return HttpResponse(status=200)
+
+    except KeyError:
+        # If something unexpected is missing in the bag structure
+        return HttpResponse(status=500)
