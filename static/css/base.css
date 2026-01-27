@@ -154,7 +154,13 @@ body {
     border-bottom-color: #17a2b8;
 }
 
+/* ------------------------------- Bag Notification */
 
+.bag-notification-wrapper {
+    max-height: 100px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
 
 /* -------------------------------- Media Queries */
 
