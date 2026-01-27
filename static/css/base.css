@@ -108,6 +108,53 @@ body {
     cursor: pointer;
 }
 
+/* ------------------------------- Toasts */
+
+.message-container {
+    position: fixed;
+    top: 72px;
+    right: 15px;
+    z-index: 99999999999;
+}
+
+.custom-toast {
+    overflow: visible;
+}
+
+.toast-capper {
+    height: 2px;
+}
+
+/* Toast arrow */
+.arrow-up {
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 10px solid black;
+    position: absolute;
+    top: -10px;
+    right: 36px;
+}
+
+/* Arrow colours */
+.arrow-success {
+    border-bottom-color: #28a745;
+}
+
+.arrow-danger {
+    border-bottom-color: #dc3545;
+}
+
+.arrow-warning {
+    border-bottom-color: #ffc107;
+}
+
+.arrow-info {
+    border-bottom-color: #17a2b8;
+}
+
+
 
 /* -------------------------------- Media Queries */
 
