@@ -1,0 +1,19 @@
+.StripeElement,
+.form-control {
+    box-sizing: border-box;
+    height: 40px;
+    padding: 10px 12px;
+    border: 1px solid #000;
+    border-radius: 0;
+    background-color: white;
+    color: #000;
+}
+
+.StripeElement--focus {
+    box-shadow: none;
+}
+
+fieldset > legend {
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
