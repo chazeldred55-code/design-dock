@@ -171,3 +171,20 @@
     </div>
 </div>
 {% endblock %}
+
+{% block postloadjs %}
+{{ block.super }}
+
+{% if stripe_public_key and client_secret %}
+    {{ stripe_public_key|json_script:"id_stripe_public_key" }}
+    {{ client_secret|json_script:"id_client_secret" }}
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="{% static 'checkout/js/stripe_elements.js' %}"></script>
+{% else %}
+    <script>
+        console.warn("Stripe keys/client_secret missing. Check env vars and your checkout view context.");
+    </script>
+{% endif %}
+
+{% endblock %}
