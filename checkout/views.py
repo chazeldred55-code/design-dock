@@ -8,29 +8,15 @@ from .forms import OrderForm
 from bag.context_processors import bag_contents
 
 
+# Stripe keys (pulled from settings once)
+STRIPE_PUBLIC_KEY = settings.STRIPE_PUBLIC_KEY
+STRIPE_SECRET_KEY = settings.STRIPE_SECRET_KEY
+
+
 def checkout(request):
     """
     Display the checkout page and create a Stripe PaymentIntent
     """
-    # --------------------
-    # Stripe setup
-    # --------------------
-    stripe.api_key = settings.STRIPE_SECRET_KEY
-
-    # 🔍 DEBUG (remove later)
-    print(
-        "STRIPE SECRET KEY:",
-        settings.STRIPE_SECRET_KEY[:10],
-        "len:",
-        len(settings.STRIPE_SECRET_KEY),
-    )
-    print(
-        "STRIPE PUBLIC KEY:",
-        settings.STRIPE_PUBLIC_KEY[:10],
-        "len:",
-        len(settings.STRIPE_PUBLIC_KEY),
-    )
-
     # --------------------
     # Bag check
     # --------------------
@@ -40,32 +26,32 @@ def checkout(request):
         return redirect(reverse("products"))
 
     # --------------------
-    # Bag totals
+    # Bag totals (use bag context processor)
     # --------------------
     current_bag = bag_contents(request)
     grand_total = current_bag["grand_total"]
-    stripe_total = round(grand_total * 100)  # GBP → pence
+    stripe_total = round(grand_total * 100)  # GBP -> pence (int)
 
     # --------------------
-    # Create PaymentIntent
+    # Stripe setup + PaymentIntent
     # --------------------
     client_secret = ""
+    if not STRIPE_PUBLIC_KEY:
+        messages.warning(
+            request,
+            "Stripe public key is missing. Did you forget to set it in your environment?"
+        )
+
     try:
+        stripe.api_key = STRIPE_SECRET_KEY
+
         intent = stripe.PaymentIntent.create(
             amount=stripe_total,
             currency=settings.STRIPE_CURRENCY,
         )
         client_secret = intent.client_secret
 
-        print(
-            "CLIENT SECRET:",
-            client_secret[:10],
-            "len:",
-            len(client_secret),
-        )
-
-    except Exception as e:
-        print("STRIPE ERROR:", str(e))
+    except Exception:
         messages.error(
             request,
             "Sorry, there was an issue processing your payment. Please try again."
@@ -89,7 +75,7 @@ def checkout(request):
     # --------------------
     context = {
         "order_form": order_form,
-        "stripe_public_key": settings.STRIPE_PUBLIC_KEY,
+        "stripe_public_key": STRIPE_PUBLIC_KEY,
         "client_secret": client_secret,
 
         # Bag context for template

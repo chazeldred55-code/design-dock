@@ -1,7 +1,6 @@
 /* global Stripe */
 
 (function () {
-  // --- Safe guards ---
   const pkEl = document.getElementById("id_stripe_public_key");
   const csEl = document.getElementById("id_client_secret");
   const form = document.getElementById("payment-form");
@@ -38,7 +37,6 @@
     return;
   }
 
-  // --- Stripe Elements setup ---
   const stripe = Stripe(stripePublicKey);
   const elements = stripe.elements();
 
@@ -49,9 +47,7 @@
       fontSize: "16px",
       "::placeholder": { color: "#aab7c4" },
     },
-    invalid: {
-      color: "#dc3545",
-    },
+    invalid: { color: "#dc3545" },
   };
 
   const card = elements.create("card", { style });
@@ -62,15 +58,9 @@
     errorDiv.textContent = event.error ? event.error.message : "";
   });
 
-  // Helpers
   function getFieldValue(id) {
     const el = document.getElementById(id);
     if (!el) return "";
-
-    // Handles input/select/textarea
-    if (el.tagName === "SELECT") {
-      return (el.value || "").trim();
-    }
     return (el.value || "").trim();
   }
 
@@ -79,6 +69,9 @@
       submitButton.disabled = isProcessing;
       submitButton.classList.toggle("disabled", isProcessing);
     }
+    // Transcript: disable the card element too
+    card.update({ disabled: isProcessing });
+
     form.dataset.processing = isProcessing ? "1" : "0";
   }
 
@@ -87,7 +80,13 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    if (processing) return; // prevent double submits
+    // Optional: enforce browser validation before Stripe call
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    if (processing) return;
     processing = true;
     setProcessing(true);
     if (errorDiv) errorDiv.textContent = "";
@@ -102,18 +101,22 @@
         city: getFieldValue("id_town_or_city"),
         state: getFieldValue("id_county"),
         postal_code: getFieldValue("id_postcode"),
-        // Must be 2-letter ISO (e.g. GB). Django CountryField normally provides that.
-        country: getFieldValue("id_country"),
+        country: getFieldValue("id_country"), // should be ISO-2 like "GB"
       },
     };
 
     try {
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: card,
-          billing_details: billingDetails,
+      const result = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card,
+            billing_details: billingDetails,
+          },
         },
-      });
+        // Robust option if you later move action handling server-side:
+        // { handleActions: false }
+      );
 
       if (result.error) {
         if (errorDiv) errorDiv.textContent = result.error.message || "Payment failed. Please try again.";
@@ -125,7 +128,6 @@
       const pi = result.paymentIntent;
 
       if (pi && pi.status === "succeeded") {
-        // Add PID hidden input (so Django can store it on the Order)
         let pidInput = document.getElementById("id_stripe_pid");
         if (!pidInput) {
           pidInput = document.createElement("input");
@@ -140,8 +142,7 @@
         return;
       }
 
-      // Any other status:
-      if (errorDiv) errorDiv.textContent = "Payment not completed. Please try again.";
+      if (errorDiv) errorDiv.textContent = `Payment status: ${pi ? pi.status : "unknown"}. Please try again.`;
       processing = false;
       setProcessing(false);
     } catch (err) {
