@@ -19,6 +19,10 @@ class Order(models.Model):
     street_address2 = models.CharField(max_length=80, null=True, blank=True)
     county = models.CharField(max_length=80, null=True, blank=True)
 
+    # Stripe / webhook support (used in later videos)
+    stripe_pid = models.CharField(max_length=254, null=False, blank=False, default="")
+    original_bag = models.TextField(null=False, blank=False, default="")
+
     date = models.DateTimeField(auto_now_add=True)
 
     delivery_cost = models.DecimalField(max_digits=6, decimal_places=2, null=False, default=0)
@@ -36,12 +40,17 @@ class Order(models.Model):
         Update grand total each time a line item is added,
         accounting for delivery costs.
         """
-        self.order_total = self.lineitems.aggregate(Sum("lineitem_total"))["lineitem_total__sum"] or 0
-        self.delivery_cost = self.order_total * settings.STANDARD_DELIVERY_PERCENTAGE / 100
+        self.order_total = self.lineitems.aggregate(
+            Sum("lineitem_total")
+        )["lineitem_total__sum"] or 0
+
         if self.order_total < settings.FREE_DELIVERY_THRESHOLD:
-            self.delivery_cost = self.order_total * settings.STANDARD_DELIVERY_PERCENTAGE / 100
+            self.delivery_cost = (
+                self.order_total * settings.STANDARD_DELIVERY_PERCENTAGE / 100
+            )
         else:
             self.delivery_cost = 0
+
         self.grand_total = self.order_total + self.delivery_cost
         self.save()
 
@@ -69,7 +78,9 @@ class OrderLineItem(models.Model):
     product = models.ForeignKey(Product, null=False, blank=False, on_delete=models.CASCADE)
     product_size = models.CharField(max_length=2, null=True, blank=True)
     quantity = models.IntegerField(null=False, blank=False, default=0)
-    lineitem_total = models.DecimalField(max_digits=6, decimal_places=2, null=False, blank=False, editable=False)
+    lineitem_total = models.DecimalField(
+        max_digits=6, decimal_places=2, null=False, blank=False, editable=False
+    )
 
     def save(self, *args, **kwargs):
         """
@@ -78,6 +89,7 @@ class OrderLineItem(models.Model):
         """
         self.lineitem_total = self.product.price * self.quantity
         super().save(*args, **kwargs)
+        self.order.update_total()
 
     def __str__(self):
         return f"SKU {self.product.sku} on order {self.order.order_number}"

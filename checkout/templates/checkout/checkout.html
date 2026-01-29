@@ -88,10 +88,10 @@
     <div class="col-12 col-lg-6">
       <p class="text-muted">Please fill out the form below to complete your order</p>
 
-      <form method="POST" action="{% url 'checkout' %}" id="payment-form" novalidate>
+      <form method="POST" action="{% url 'checkout' %}" id="payment-form">
         {% csrf_token %}
 
-        {# Optional but recommended: JS will set this after Stripe confirms payment #}
+        <!-- JS will populate this before submitting -->
         <input type="hidden" name="stripe_pid" id="id_stripe_pid" value="">
 
         <!-- Details -->
@@ -137,7 +137,6 @@
         <fieldset class="rounded px-3">
           <legend class="fieldset-label small text-black px-2 w-auto">Payment</legend>
 
-          <!-- Stripe mounts here -->
           <div class="mb-3" id="card-element"></div>
           <div class="mb-3 text-danger" id="card-errors" role="alert"></div>
 
@@ -158,7 +157,6 @@
             </p>
           </div>
         </fieldset>
-
       </form>
     </div>
 
@@ -169,10 +167,8 @@
 {% block postloadjs %}
 {{ block.super }}
 
-{# Values for external JS via json_script #}
 {{ stripe_public_key|default:""|json_script:"id_stripe_public_key" }}
 {{ client_secret|default:""|json_script:"id_client_secret" }}
 
-{# Stripe.js MUST be in base.html corejs; do NOT load it here #}
 <script src="{% static 'checkout/js/stripe_elements.js' %}"></script>
 {% endblock %}

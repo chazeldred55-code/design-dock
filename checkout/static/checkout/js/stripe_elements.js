@@ -1,6 +1,7 @@
 /* global Stripe */
 
 (function () {
+  // --- Safe guards ---
   const pkEl = document.getElementById("id_stripe_public_key");
   const csEl = document.getElementById("id_client_secret");
   const form = document.getElementById("payment-form");
@@ -37,6 +38,7 @@
     return;
   }
 
+  // --- Stripe Elements setup ---
   const stripe = Stripe(stripePublicKey);
   const elements = stripe.elements();
 
@@ -47,7 +49,9 @@
       fontSize: "16px",
       "::placeholder": { color: "#aab7c4" },
     },
-    invalid: { color: "#dc3545" },
+    invalid: {
+      color: "#dc3545",
+    },
   };
 
   const card = elements.create("card", { style });
@@ -58,10 +62,31 @@
     errorDiv.textContent = event.error ? event.error.message : "";
   });
 
+  // Helpers
   function getFieldValue(id) {
     const el = document.getElementById(id);
     if (!el) return "";
     return (el.value || "").trim();
+  }
+
+  function normalizeCountryToISO2(rawCountry) {
+    const v = (rawCountry || "").trim();
+
+    // If your field already uses ISO-2 codes, just return it.
+    if (/^[A-Za-z]{2}$/.test(v)) return v.toUpperCase();
+
+    // Common label -> ISO-2 mappings (covers your current error)
+    const map = {
+      "United Kingdom": "GB",
+      "UK": "GB",
+      "Great Britain": "GB",
+      "England": "GB",
+      "Scotland": "GB",
+      "Wales": "GB",
+      "Northern Ireland": "GB",
+    };
+
+    return map[v] || v; // If it's something else, return as-is
   }
 
   function setProcessing(isProcessing) {
@@ -69,7 +94,8 @@
       submitButton.disabled = isProcessing;
       submitButton.classList.toggle("disabled", isProcessing);
     }
-    // Transcript: disable the card element too
+
+    // Disable card element too (prevents multiple submissions)
     card.update({ disabled: isProcessing });
 
     form.dataset.processing = isProcessing ? "1" : "0";
@@ -80,16 +106,14 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Optional: enforce browser validation before Stripe call
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    if (processing) return;
+    if (processing) return; // prevent double submits
     processing = true;
     setProcessing(true);
     if (errorDiv) errorDiv.textContent = "";
+
+    // Stripe requires ISO-2 country code (e.g. GB), not "United Kingdom"
+    const rawCountry = getFieldValue("id_country");
+    const countryCode = normalizeCountryToISO2(rawCountry);
 
     const billingDetails = {
       name: getFieldValue("id_full_name"),
@@ -101,22 +125,17 @@
         city: getFieldValue("id_town_or_city"),
         state: getFieldValue("id_county"),
         postal_code: getFieldValue("id_postcode"),
-        country: getFieldValue("id_country"), // should be ISO-2 like "GB"
+        country: countryCode,
       },
     };
 
     try {
-      const result = await stripe.confirmCardPayment(
-        clientSecret,
-        {
-          payment_method: {
-            card,
-            billing_details: billingDetails,
-          },
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: card,
+          billing_details: billingDetails,
         },
-        // Robust option if you later move action handling server-side:
-        // { handleActions: false }
-      );
+      });
 
       if (result.error) {
         if (errorDiv) errorDiv.textContent = result.error.message || "Payment failed. Please try again.";
@@ -128,6 +147,7 @@
       const pi = result.paymentIntent;
 
       if (pi && pi.status === "succeeded") {
+        // Add PID hidden input (so Django can store it on the Order)
         let pidInput = document.getElementById("id_stripe_pid");
         if (!pidInput) {
           pidInput = document.createElement("input");
@@ -142,7 +162,8 @@
         return;
       }
 
-      if (errorDiv) errorDiv.textContent = `Payment status: ${pi ? pi.status : "unknown"}. Please try again.`;
+      // Any other status:
+      if (errorDiv) errorDiv.textContent = "Payment not completed. Please try again.";
       processing = false;
       setProcessing(false);
     } catch (err) {
