@@ -30,6 +30,7 @@
   </div>
 
   <div class="row">
+
     <!-- Left column -->
     <div class="col-12 col-lg-6 mb-4">
       <p class="text-muted mb-3">
@@ -42,11 +43,11 @@
       </a>
     </div>
 
-    <!-- Right column: bordered order summary wrapper -->
+    <!-- Right column: Order summary -->
     <div class="col-12 col-lg-6">
       <div class="border rounded p-3">
 
-        <!-- Section: Order Info -->
+        <!-- Order Info -->
         <div class="row">
           <div class="col">
             <small class="text-muted">Order Info:</small>
@@ -73,7 +74,7 @@
 
         <hr class="my-3">
 
-        <!-- Section: Order Details -->
+        <!-- Order Details -->
         <div class="row">
           <div class="col">
             <small class="text-muted">Order Details:</small>
@@ -81,26 +82,25 @@
         </div>
 
         {% for item in order.lineitems.all %}
-          <div class="row">
-            <div class="col-12 col-md-4">
-              <p class="mb-0 small font-weight-bold">{{ item.product.name }}</p>
-            </div>
-            <div class="col-12 col-md-8 text-md-right">
-              <p class="mb-0 small">
-                {% if item.product_size %}
-                  Size {{ item.product_size|upper }}
-                {% endif %}
-                {% if item.product_size %} | {% endif %}
-                Qty {{ item.quantity }}
-                | £{{ item.lineitem_total|floatformat:2 }}
-              </p>
-            </div>
+        <div class="row">
+          <div class="col-12 col-md-4">
+            <p class="mb-0 small font-weight-bold">{{ item.product.name }}</p>
           </div>
+          <div class="col-12 col-md-8 text-md-right">
+            <p class="mb-0 small">
+              {% if item.product_size %}
+                Size {{ item.product_size|upper }} |
+              {% endif %}
+              Qty {{ item.quantity }} |
+              £{{ item.lineitem_total|floatformat:2 }}
+            </p>
+          </div>
+        </div>
         {% endfor %}
 
         <hr class="my-3">
 
-        <!-- Section: Delivering To -->
+        <!-- Delivering To -->
         <div class="row">
           <div class="col">
             <small class="text-muted">Delivering To:</small>
@@ -116,6 +116,7 @@
           </div>
         </div>
 
+        {% if order.street_address1 %}
         <div class="row">
           <div class="col-12 col-md-4">
             <p class="mb-0 font-weight-bold">Address 1</p>
@@ -124,36 +125,29 @@
             <p class="mb-0">{{ order.street_address1 }}</p>
           </div>
         </div>
+        {% endif %}
 
+        {% if order.street_address2 %}
         <div class="row">
           <div class="col-12 col-md-4">
             <p class="mb-0 font-weight-bold">Address 2</p>
           </div>
           <div class="col-12 col-md-8 text-md-right">
-            <p class="mb-0">
-              {% if order.street_address2 %}
-                {{ order.street_address2 }}
-              {% else %}
-                —
-              {% endif %}
-            </p>
+            <p class="mb-0">{{ order.street_address2 }}</p>
           </div>
         </div>
+        {% endif %}
 
+        {% if order.county %}
         <div class="row">
           <div class="col-12 col-md-4">
             <p class="mb-0 font-weight-bold">County</p>
           </div>
           <div class="col-12 col-md-8 text-md-right">
-            <p class="mb-0">
-              {% if order.county %}
-                {{ order.county }}
-              {% else %}
-                —
-              {% endif %}
-            </p>
+            <p class="mb-0">{{ order.county }}</p>
           </div>
         </div>
+        {% endif %}
 
         <div class="row">
           <div class="col-12 col-md-4">
@@ -164,20 +158,16 @@
           </div>
         </div>
 
+        {% if order.postcode %}
         <div class="row">
           <div class="col-12 col-md-4">
             <p class="mb-0 font-weight-bold">Postcode</p>
           </div>
           <div class="col-12 col-md-8 text-md-right">
-            <p class="mb-0">
-              {% if order.postcode %}
-                {{ order.postcode }}
-              {% else %}
-                —
-              {% endif %}
-            </p>
+            <p class="mb-0">{{ order.postcode }}</p>
           </div>
         </div>
+        {% endif %}
 
         <div class="row">
           <div class="col-12 col-md-4">
@@ -199,7 +189,7 @@
 
         <hr class="my-3">
 
-        <!-- Section: Billing Info -->
+        <!-- Billing Info -->
         <div class="row">
           <div class="col">
             <small class="text-muted">Billing Info:</small>
@@ -235,6 +225,7 @@
 
       </div>
     </div>
+
   </div>
 </div>
 {% endblock %}
