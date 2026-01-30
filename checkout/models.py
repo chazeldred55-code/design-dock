@@ -19,9 +19,12 @@ class Order(models.Model):
     street_address2 = models.CharField(max_length=80, null=True, blank=True)
     county = models.CharField(max_length=80, null=True, blank=True)
 
-    # Stripe / webhook support (used in later videos)
+    # Stripe / webhook support
     stripe_pid = models.CharField(max_length=254, null=False, blank=False, default="")
     original_bag = models.TextField(null=False, blank=False, default="")
+
+    # Email tracking to prevent duplicate confirmations
+    email_sent = models.BooleanField(default=False)
 
     date = models.DateTimeField(auto_now_add=True)
 
@@ -75,11 +78,20 @@ class OrderLineItem(models.Model):
         on_delete=models.CASCADE,
         related_name="lineitems",
     )
-    product = models.ForeignKey(Product, null=False, blank=False, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        Product,
+        null=False,
+        blank=False,
+        on_delete=models.CASCADE
+    )
     product_size = models.CharField(max_length=2, null=True, blank=True)
     quantity = models.IntegerField(null=False, blank=False, default=0)
     lineitem_total = models.DecimalField(
-        max_digits=6, decimal_places=2, null=False, blank=False, editable=False
+        max_digits=6,
+        decimal_places=2,
+        null=False,
+        blank=False,
+        editable=False
     )
 
     def save(self, *args, **kwargs):

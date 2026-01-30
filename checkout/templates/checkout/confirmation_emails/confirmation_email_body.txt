@@ -1,0 +1,12 @@
+Hi {{ order.full_name }},
+
+Thanks for your order!
+
+Your order number is {{ order.order_number }}.
+
+Order Total: £{{ order.grand_total }}
+
+If you have any questions, reply to this email or contact us at {{ contact_email }}.
+
+Thanks,
+The Boutique Ado Team

@@ -17,3 +17,25 @@ fieldset > legend {
     font-size: 0.8rem;
     margin-bottom: 5px;
 }
+/* Full-screen loading overlay (very obvious) */
+.loading-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.7); /* darker = clearer */
+}
+
+.loading-card{
+  width: min(420px, 90vw);
+  background: #fff;
+  border-radius: 0.3rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.loading-card h5{
+  font-weight: 700;
+}

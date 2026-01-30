@@ -1,50 +1,53 @@
 import stripe
+
 from django.conf import settings
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+from .webhook_handler import StripeWH_Handler
 
 
+@require_POST
 @csrf_exempt
 def webhook(request):
+    """
+    Listen for Stripe webhooks and route them to the correct handler.
+    """
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    wh_secret = settings.STRIPE_WH_SECRET
+
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
-    endpoint_secret = getattr(settings, "STRIPE_WH_SECRET", "")
-
-    # quick debug
-    print("---- STRIPE WEBHOOK HIT ----")
-    print("method:", request.method)
-    print("path:", request.path)
-    print("payload bytes:", len(payload))
-    print("sig header present:", bool(sig_header))
-    print("wh secret present:", bool(endpoint_secret))
-    print("wh secret starts:", (endpoint_secret or "")[:10])
-
-    if not endpoint_secret:
-        return HttpResponse(status=200)
+    event = None
 
     try:
         event = stripe.Webhook.construct_event(
             payload=payload,
             sig_header=sig_header,
-            secret=endpoint_secret,
+            secret=wh_secret,
         )
-    except ValueError as e:
-        print("❌ ValueError (invalid payload):", e)
+    except ValueError:
+        # Invalid payload
         return HttpResponse(status=400)
-    except stripe.error.SignatureVerificationError as e:
-        print("❌ SignatureVerificationError:", e)
+    except stripe.error.SignatureVerificationError:
+        # Invalid signature
         return HttpResponse(status=400)
+    except Exception as e:
+        # Generic exception handler (per transcript)
+        return HttpResponse(content=str(e), status=400)
 
-    print("✅ event type:", event["type"])
+    # Instantiate handler
+    handler = StripeWH_Handler(request)
 
-    if event["type"] == "payment_intent.succeeded":
-        intent = event["data"]["object"]
-        print("✅ payment_intent.succeeded:", intent.get("id"))
+    # Map event types to handler methods
+    event_map = {
+        "payment_intent.succeeded": handler.handle_payment_intent_succeeded,
+        "payment_intent.payment_failed": handler.handle_payment_intent_payment_failed,
+    }
 
-    elif event["type"] == "payment_intent.payment_failed":
-        intent = event["data"]["object"]
-        print("❌ payment_intent.payment_failed:", intent.get("id"))
+    # Get the correct handler or fall back to generic handler
+    event_type = event["type"]
+    event_handler = event_map.get(event_type, handler.handle_event)
 
-    return HttpResponse(status=200)
+    return event_handler(event)
