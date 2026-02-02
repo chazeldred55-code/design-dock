@@ -2,21 +2,23 @@
 console.log("stripe_elements.js LOADED");
 
 (function () {
-  // --- DOM ---
-  const pkEl = document.getElementById("id_stripe_public_key");
-  const csEl = document.getElementById("id_client_secret");
+  // -------------------------
+  // DOM
+  // -------------------------
+  const pkEl = document.getElementById("id_stripe_public_key"); // json_script
+  const csEl = document.getElementById("id_client_secret");     // json_script
+
   const form = document.getElementById("payment-form");
   const cardMount = document.getElementById("card-element");
   const errorDiv = document.getElementById("card-errors");
   const submitButton = document.getElementById("submit-button");
   const overlay = document.getElementById("loading-overlay");
 
-  // Optional: save-info checkbox + redirect input (these IDs match Boutique Ado conventions)
   const saveInfoCheckbox = document.getElementById("id-save-info");
-  const redirectUrlEl = document.getElementById("id_redirect_url"); // if you have it
+  const cacheUrlEl = document.getElementById("id_cache_url"); // hidden input set in template
 
   if (!pkEl || !csEl || !form) {
-    console.warn("Stripe setup missing: key/secret/form not found.");
+    console.warn("Stripe setup missing: public key / client secret / form not found.");
     return;
   }
 
@@ -26,7 +28,9 @@ console.log("stripe_elements.js LOADED");
     return;
   }
 
-  // --- Read JSON from json_script ---
+  // -------------------------
+  // Read JSON safely
+  // -------------------------
   let stripePublicKey;
   let clientSecret;
 
@@ -45,7 +49,9 @@ console.log("stripe_elements.js LOADED");
     return;
   }
 
-  // --- Stripe Elements ---
+  // -------------------------
+  // Stripe Elements
+  // -------------------------
   const stripe = Stripe(stripePublicKey);
   const elements = stripe.elements();
 
@@ -67,7 +73,9 @@ console.log("stripe_elements.js LOADED");
     errorDiv.textContent = event.error ? event.error.message : "";
   });
 
-  // --- helpers ---
+  // -------------------------
+  // Helpers
+  // -------------------------
   function getFieldValue(id) {
     const el = document.getElementById(id);
     return el && el.value ? String(el.value).trim() : "";
@@ -76,7 +84,7 @@ console.log("stripe_elements.js LOADED");
   function normalizeCountryToISO2(rawCountry) {
     const v = (rawCountry || "").trim();
 
-    // If already ISO-2
+    // Already ISO-2
     if (/^[A-Za-z]{2}$/.test(v)) return v.toUpperCase();
 
     // Common label -> ISO-2 mappings
@@ -110,11 +118,16 @@ console.log("stripe_elements.js LOADED");
       submitButton.disabled = isProcessing;
       submitButton.classList.toggle("disabled", isProcessing);
     }
-    card.update({ disabled: isProcessing });
+    // Not all Stripe Elements support disabled; keep safe.
+    try {
+      card.update({ disabled: isProcessing });
+    } catch (e) {
+      // ignore
+    }
     form.dataset.processing = isProcessing ? "1" : "0";
   }
 
-  // CSRF cookie reader (works even if token isn’t inside the form)
+  // Read CSRF token from cookie (Django default)
   function getCookie(name) {
     const cookieValue = document.cookie
       .split(";")
@@ -123,14 +136,12 @@ console.log("stripe_elements.js LOADED");
     return cookieValue ? decodeURIComponent(cookieValue.split("=")[1]) : null;
   }
 
-  async function cacheCheckoutData(cs, saveInfo) {
-    // Your Django URL should match urls.py, e.g. path('cache_checkout_data/', ...)
-    const url = "/checkout/cache_checkout_data/";
+  async function cacheCheckoutData(clientSecretValue, saveInfo) {
+    const url = cacheUrlEl ? cacheUrlEl.value : "/checkout/cache_checkout_data/";
     const csrftoken = getCookie("csrftoken");
 
-    // Send form-encoded data (simplest for Django request.POST)
     const body = new URLSearchParams();
-    body.append("client_secret", cs);
+    body.append("client_secret", clientSecretValue);
     body.append("save_info", saveInfo ? "on" : "");
 
     const resp = await fetch(url, {
@@ -143,14 +154,17 @@ console.log("stripe_elements.js LOADED");
     });
 
     if (!resp.ok) {
+      // If your view returns useful text, bubble it up for debugging
       const text = await resp.text().catch(() => "");
-      throw new Error(text || "Failed to cache checkout data");
+      throw new Error(text || `Failed to cache checkout data (${resp.status})`);
     }
   }
 
   let processing = false;
 
-  // --- submit handler ---
+  // -------------------------
+  // Submit handler
+  // -------------------------
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (processing) return;
@@ -160,10 +174,10 @@ console.log("stripe_elements.js LOADED");
     showOverlay();
     if (errorDiv) errorDiv.textContent = "";
 
+    // Country field in Boutique Ado is often ISO-2 already
     const rawCountry = getFieldValue("id_country");
     const countryCode = normalizeCountryToISO2(rawCountry);
 
-    // Billing (Stripe may override postal_code from card; harmless but optional)
     const billingDetails = {
       name: getFieldValue("id_full_name"),
       email: getFieldValue("id_email"),
@@ -173,12 +187,10 @@ console.log("stripe_elements.js LOADED");
         line2: getFieldValue("id_street_address2"),
         city: getFieldValue("id_town_or_city"),
         state: getFieldValue("id_county"),
-        // postal_code: getFieldValue("id_postcode"), // optional; course often omits
         country: countryCode,
       },
     };
 
-    // Shipping (include postcode here)
     const shippingDetails = {
       name: getFieldValue("id_full_name"),
       phone: getFieldValue("id_phone_number"),
@@ -193,11 +205,11 @@ console.log("stripe_elements.js LOADED");
     };
 
     try {
-      // 1) Cache metadata onto PaymentIntent (server-side)
+      // 1) Cache the extra data onto the PaymentIntent (metadata, save_info, username, etc.)
       const saveInfo = !!(saveInfoCheckbox && saveInfoCheckbox.checked);
       await cacheCheckoutData(clientSecret, saveInfo);
 
-      // 2) Confirm payment with billing + shipping
+      // 2) Confirm payment
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: card,
@@ -217,7 +229,7 @@ console.log("stripe_elements.js LOADED");
       const pi = result.paymentIntent;
 
       if (pi && pi.status === "succeeded") {
-        // Optional: keep pid field for your existing Django flow (fine to keep)
+        // Store pid for Django flow (optional but common)
         let pidInput = document.getElementById("id_stripe_pid");
         if (!pidInput) {
           pidInput = document.createElement("input");
@@ -228,12 +240,7 @@ console.log("stripe_elements.js LOADED");
         }
         pidInput.value = pi.id;
 
-        // Optional: redirect_url hidden input if you use it server-side
-        if (redirectUrlEl) {
-          // leave as-is if you already set it in the template
-        }
-
-        // Leave overlay ON; form submission begins your Django checkout POST
+        // Leave overlay ON; submit to Django checkout view
         form.submit();
         return;
       }
@@ -244,10 +251,20 @@ console.log("stripe_elements.js LOADED");
       hideOverlay();
     } catch (err) {
       console.warn("Checkout error:", err);
+
+      // Course pattern often reloads to show messages from the view:
+      // location.reload();
+      // But we can show it inline (better UX). If you prefer course behavior, uncomment reload.
       if (errorDiv) {
         errorDiv.textContent =
-          "Sorry, there was an issue processing your payment. Please try again.";
+          err && err.message
+            ? err.message
+            : "Sorry, there was an issue processing your payment. Please try again.";
       }
+
+      // Uncomment to follow the course exactly (show Django messages):
+      // location.reload();
+
       processing = false;
       setProcessing(false);
       hideOverlay();

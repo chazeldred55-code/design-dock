@@ -9,13 +9,14 @@ from django.views.decorators.http import require_POST
 
 from bag.context_processors import bag_contents
 from .forms import OrderForm
-from .models import Order
+from .models import Order, OrderLineItem
+from products.models import Product
 
 
 @require_POST
 def cache_checkout_data(request):
     """
-    Store metadata on the PaymentIntent so Stripe webhooks can create the Order.
+    Store metadata on the PaymentIntent so Stripe webhooks can read it.
     Called from stripe_elements.js BEFORE confirmCardPayment.
     """
     try:
@@ -35,19 +36,19 @@ def cache_checkout_data(request):
         return HttpResponse(status=200)
 
     except Exception as e:
+        messages.error(
+            request,
+            "Sorry, your payment cannot be processed right now. Please try again later.",
+        )
         return HttpResponse(content=str(e), status=400)
 
 
 def checkout(request):
     """
-    WEBHOOK-SOURCE-OF-TRUTH FLOW
-
     GET:
-      - Render checkout + create PaymentIntent
+      - Render checkout page + create PaymentIntent
     POST:
-      - Do NOT create Order
-      - Store save_info choice
-      - Redirect to success page using pid
+      - Create Order + line items, then redirect to checkout_success (order_number)
     """
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -61,21 +62,70 @@ def checkout(request):
     stripe_total = round(grand_total * 100)
 
     if request.method == "POST":
-        # Persist save_info choice so webhook-created order can later update profile (optional step)
-        save_info = request.POST.get("save_info")
-        request.session["save_info"] = True if save_info else False
+        # Build order data from the form POST
+        form_data = {
+            "full_name": request.POST.get("full_name"),
+            "email": request.POST.get("email"),
+            "phone_number": request.POST.get("phone_number"),
+            "country": request.POST.get("country"),
+            "postcode": request.POST.get("postcode"),
+            "town_or_city": request.POST.get("town_or_city"),
+            "street_address1": request.POST.get("street_address1"),
+            "street_address2": request.POST.get("street_address2"),
+            "county": request.POST.get("county"),
+        }
+        order_form = OrderForm(form_data)
 
-        client_secret = request.POST.get("client_secret", "")
-        if "_secret" not in client_secret:
-            messages.error(request, "Payment reference missing. Please try again.")
-            return redirect(reverse("checkout"))
+        if order_form.is_valid():
+            order = order_form.save(commit=False)
 
-        pid = client_secret.split("_secret")[0]
+            client_secret = request.POST.get("client_secret", "")
+            if "_secret" not in client_secret:
+                messages.error(request, "Payment reference missing. Please try again.")
+                return redirect(reverse("checkout"))
 
-        # ✅ Redirect to success page by pid; webhook will create the order shortly
-        return redirect(reverse("checkout_success", args=[pid]))
+            pid = client_secret.split("_secret")[0]
+            order.stripe_pid = pid
+            order.original_bag = json.dumps(bag)
+            order.save()
 
-    # GET: show checkout + intent
+            # Create line items
+            for item_id, item_data in bag.items():
+                try:
+                    product = Product.objects.get(id=item_id)
+                except Product.DoesNotExist:
+                    messages.error(request, "One of the products in your bag wasn't found.")
+                    order.delete()
+                    return redirect(reverse("view_bag"))
+
+                if isinstance(item_data, int):
+                    OrderLineItem.objects.create(
+                        order=order,
+                        product=product,
+                        quantity=item_data,
+                    )
+                else:
+                    # item_data is a dict of sizes -> quantities
+                    for size, quantity in item_data.get("items_by_size", {}).items():
+                        OrderLineItem.objects.create(
+                            order=order,
+                            product=product,
+                            quantity=quantity,
+                            product_size=size,
+                        )
+
+            # Persist save_info choice (used later for profile updates if you do that step)
+            save_info = request.POST.get("save_info")
+            request.session["save_info"] = True if save_info else False
+
+            return redirect(reverse("checkout_success", args=[order.order_number]))
+        else:
+            messages.error(
+                request,
+                "There was an error with your form. Please double check your information.",
+            )
+
+    # GET: Create PaymentIntent and render the checkout page
     order_form = OrderForm()
 
     try:
@@ -96,32 +146,23 @@ def checkout(request):
     return render(request, "checkout/checkout.html", context)
 
 
-def checkout_success(request, pid):
+def checkout_success(request, order_number):
     """
-    Success page waits briefly for the webhook to create the Order.
+    Success page shown after the Order is created.
+    Clears the bag and shows order info.
     """
-    # Poll for a short period to allow webhook creation
-    # (Stripe/webhook can be slightly delayed)
-    import time
+    save_info = request.session.get("save_info")
+    order = get_object_or_404(Order, order_number=order_number)
 
-    order = None
-    for _ in range(10):  # up to ~10 seconds
-        try:
-            order = Order.objects.get(stripe_pid=pid)
-            break
-        except Order.DoesNotExist:
-            time.sleep(1)
+    # (Optional later step) If you have a profile model, you’d update it here using save_info
 
-    if not order:
-        messages.info(
-            request,
-            "Your payment was received. We're finalising your order—please refresh in a moment.",
-        )
-        # Render a lightweight “pending” success page; you can reuse checkout_success template
-        return render(request, "checkout/checkout_success.html", {"order": None, "pid": pid})
+    if "bag" in request.session:
+        del request.session["bag"]
 
-    # Clear bag only once order exists
-    request.session["bag"] = {}
+    messages.success(
+        request,
+        f"Order successfully processed! Your order number is {order_number}. "
+        f"A confirmation email will be sent to {order.email}.",
+    )
 
-    messages.success(request, f"Order successfully processed! Your order number is {order.order_number}.")
-    return render(request, "checkout/checkout_success.html", {"order": order, "pid": pid})
+    return render(request, "checkout/checkout_success.html", {"order": order})

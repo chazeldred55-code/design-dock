@@ -105,13 +105,13 @@
       <form method="POST" action="{% url 'checkout' %}" id="payment-form">
         {% csrf_token %}
 
-        <!-- JS will populate this before submitting -->
+        <!-- Stripe PID is set by JS before submitting -->
         <input type="hidden" name="stripe_pid" id="id_stripe_pid" value="">
 
-        <!-- Ensure Django POST always has the same client_secret -->
+        <!-- Optional: useful if you want it available in your POST handler -->
         <input type="hidden" name="client_secret" id="id_client_secret_input" value="{{ client_secret }}">
 
-        <!-- Provide the correct cache URL (no hardcoded prefix in JS) -->
+        <!-- Cache endpoint URL (JS should read this instead of hardcoding) -->
         <input type="hidden" id="id_cache_url" value="{% url 'cache_checkout_data' %}">
 
         <!-- Details -->
@@ -132,14 +132,14 @@
           {{ order_form.street_address2|as_crispy_field }}
           {{ order_form.county|as_crispy_field }}
 
-          <div class="form-check form-check-inline float-right mr-0">
+          <div class="form-check form-check-inline float-right mr-0 mt-2">
             {% if user.is_authenticated %}
+              <input class="form-check-input mr-2"
+                     type="checkbox"
+                     id="id-save-info"
+                     name="save_info"
+                     checked>
               <label class="form-check-label" for="id-save-info">
-                <input class="form-check-input mr-2"
-                       type="checkbox"
-                       id="id-save-info"
-                       name="save_info"
-                       checked>
                 Save this delivery information to my profile
               </label>
             {% else %}
@@ -187,9 +187,13 @@
 {% block postloadjs %}
 {{ block.super }}
 
+{# Stripe keys available to JS safely #}
 {{ stripe_public_key|default:""|json_script:"id_stripe_public_key" }}
 {{ client_secret|default:""|json_script:"id_client_secret" }}
 
+{# IMPORTANT: only load this ONCE per page (remove from base.html if present) #}
 <script src="https://js.stripe.com/v3/"></script>
+
+{# Your Stripe Elements logic #}
 <script src="{% static 'checkout/js/stripe_elements.js' %}"></script>
 {% endblock %}
