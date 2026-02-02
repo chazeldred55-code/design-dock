@@ -1,4 +1,5 @@
 /* global Stripe */
+console.log("stripe_elements.js LOADED");
 
 (function () {
   // --- DOM ---
@@ -9,6 +10,10 @@
   const errorDiv = document.getElementById("card-errors");
   const submitButton = document.getElementById("submit-button");
   const overlay = document.getElementById("loading-overlay");
+
+  // Optional: save-info checkbox + redirect input (these IDs match Boutique Ado conventions)
+  const saveInfoCheckbox = document.getElementById("id-save-info");
+  const redirectUrlEl = document.getElementById("id_redirect_url"); // if you have it
 
   if (!pkEl || !csEl || !form) {
     console.warn("Stripe setup missing: key/secret/form not found.");
@@ -77,11 +82,11 @@
     // Common label -> ISO-2 mappings
     const map = {
       "United Kingdom": "GB",
-      "UK": "GB",
+      UK: "GB",
       "Great Britain": "GB",
-      "England": "GB",
-      "Scotland": "GB",
-      "Wales": "GB",
+      England: "GB",
+      Scotland: "GB",
+      Wales: "GB",
       "Northern Ireland": "GB",
     };
 
@@ -109,15 +114,48 @@
     form.dataset.processing = isProcessing ? "1" : "0";
   }
 
+  // CSRF cookie reader (works even if token isn’t inside the form)
+  function getCookie(name) {
+    const cookieValue = document.cookie
+      .split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith(name + "="));
+    return cookieValue ? decodeURIComponent(cookieValue.split("=")[1]) : null;
+  }
+
+  async function cacheCheckoutData(cs, saveInfo) {
+    // Your Django URL should match urls.py, e.g. path('cache_checkout_data/', ...)
+    const url = "/checkout/cache_checkout_data/";
+    const csrftoken = getCookie("csrftoken");
+
+    // Send form-encoded data (simplest for Django request.POST)
+    const body = new URLSearchParams();
+    body.append("client_secret", cs);
+    body.append("save_info", saveInfo ? "on" : "");
+
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrftoken || "",
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: body.toString(),
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => "");
+      throw new Error(text || "Failed to cache checkout data");
+    }
+  }
+
   let processing = false;
 
   // --- submit handler ---
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     if (processing) return;
-    processing = true;
 
+    processing = true;
     setProcessing(true);
     showOverlay();
     if (errorDiv) errorDiv.textContent = "";
@@ -125,9 +163,24 @@
     const rawCountry = getFieldValue("id_country");
     const countryCode = normalizeCountryToISO2(rawCountry);
 
+    // Billing (Stripe may override postal_code from card; harmless but optional)
     const billingDetails = {
       name: getFieldValue("id_full_name"),
       email: getFieldValue("id_email"),
+      phone: getFieldValue("id_phone_number"),
+      address: {
+        line1: getFieldValue("id_street_address1"),
+        line2: getFieldValue("id_street_address2"),
+        city: getFieldValue("id_town_or_city"),
+        state: getFieldValue("id_county"),
+        // postal_code: getFieldValue("id_postcode"), // optional; course often omits
+        country: countryCode,
+      },
+    };
+
+    // Shipping (include postcode here)
+    const shippingDetails = {
+      name: getFieldValue("id_full_name"),
       phone: getFieldValue("id_phone_number"),
       address: {
         line1: getFieldValue("id_street_address1"),
@@ -140,11 +193,17 @@
     };
 
     try {
+      // 1) Cache metadata onto PaymentIntent (server-side)
+      const saveInfo = !!(saveInfoCheckbox && saveInfoCheckbox.checked);
+      await cacheCheckoutData(clientSecret, saveInfo);
+
+      // 2) Confirm payment with billing + shipping
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: card,
           billing_details: billingDetails,
         },
+        shipping: shippingDetails,
       });
 
       if (result.error) {
@@ -158,7 +217,7 @@
       const pi = result.paymentIntent;
 
       if (pi && pi.status === "succeeded") {
-        // Ensure PID is set so your Django view can store it
+        // Optional: keep pid field for your existing Django flow (fine to keep)
         let pidInput = document.getElementById("id_stripe_pid");
         if (!pidInput) {
           pidInput = document.createElement("input");
@@ -169,7 +228,12 @@
         }
         pidInput.value = pi.id;
 
-        // Leave overlay ON (redirect happens immediately after form POST)
+        // Optional: redirect_url hidden input if you use it server-side
+        if (redirectUrlEl) {
+          // leave as-is if you already set it in the template
+        }
+
+        // Leave overlay ON; form submission begins your Django checkout POST
         form.submit();
         return;
       }
@@ -179,8 +243,11 @@
       setProcessing(false);
       hideOverlay();
     } catch (err) {
-      console.warn("Stripe confirmCardPayment threw:", err);
-      if (errorDiv) errorDiv.textContent = "Payment failed. Please try again.";
+      console.warn("Checkout error:", err);
+      if (errorDiv) {
+        errorDiv.textContent =
+          "Sorry, there was an issue processing your payment. Please try again.";
+      }
       processing = false;
       setProcessing(false);
       hideOverlay();

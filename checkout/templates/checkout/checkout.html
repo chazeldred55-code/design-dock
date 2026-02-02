@@ -56,9 +56,13 @@
         <div class="row align-items-center py-2 border-top">
           <div class="col-3">
             {% if item.product.image %}
-              <img class="img-fluid rounded" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+              <img class="img-fluid rounded"
+                   src="{{ item.product.image.url }}"
+                   alt="{{ item.product.name }}">
             {% else %}
-              <img class="img-fluid rounded" src="{% static 'images/noimage.png' %}" alt="{{ item.product.name }}">
+              <img class="img-fluid rounded"
+                   src="{% static 'images/noimage.png' %}"
+                   alt="{{ item.product.name }}">
             {% endif %}
           </div>
 
@@ -103,6 +107,12 @@
 
         <!-- JS will populate this before submitting -->
         <input type="hidden" name="stripe_pid" id="id_stripe_pid" value="">
+
+        <!-- Ensure Django POST always has the same client_secret -->
+        <input type="hidden" name="client_secret" id="id_client_secret_input" value="{{ client_secret }}">
+
+        <!-- Provide the correct cache URL (no hardcoded prefix in JS) -->
+        <input type="hidden" id="id_cache_url" value="{% url 'cache_checkout_data' %}">
 
         <!-- Details -->
         <fieldset class="rounded px-3 mb-5">

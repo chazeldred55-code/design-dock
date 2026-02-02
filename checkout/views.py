@@ -1,158 +1,127 @@
-from django.shortcuts import render, redirect, reverse, get_object_or_404, HttpResponse
-from django.contrib import messages
-from django.conf import settings
-from django.views.decorators.http import require_POST
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-
+import json
 import stripe
 
-from .forms import OrderForm
-from .models import Order, OrderLineItem
-from products.models import Product
+from django.conf import settings
+from django.contrib import messages
+from django.http import HttpResponse
+from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.views.decorators.http import require_POST
+
 from bag.context_processors import bag_contents
+from .forms import OrderForm
+from .models import Order
+
+
+@require_POST
+def cache_checkout_data(request):
+    """
+    Store metadata on the PaymentIntent so Stripe webhooks can create the Order.
+    Called from stripe_elements.js BEFORE confirmCardPayment.
+    """
+    try:
+        client_secret = request.POST.get("client_secret", "")
+        pid = client_secret.split("_secret")[0]
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        stripe.PaymentIntent.modify(
+            pid,
+            metadata={
+                "username": request.user.username if request.user.is_authenticated else "anonymous",
+                "save_info": request.POST.get("save_info", ""),
+                "bag": json.dumps(request.session.get("bag", {})),
+            },
+        )
+        return HttpResponse(status=200)
+
+    except Exception as e:
+        return HttpResponse(content=str(e), status=400)
 
 
 def checkout(request):
     """
-    Display checkout page + create Stripe PaymentIntent (GET)
-    Process order form + save order/line items (POST)
-    """
-    # ✅ Debug in the correct place (request exists here)
-    print("CHECKOUT VIEW HIT:", request.method)
+    WEBHOOK-SOURCE-OF-TRUTH FLOW
 
+    GET:
+      - Render checkout + create PaymentIntent
+    POST:
+      - Do NOT create Order
+      - Store save_info choice
+      - Redirect to success page using pid
+    """
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
-    # Bag check
     bag = request.session.get("bag", {})
     if not bag:
         messages.error(request, "There's nothing in your bag at the moment")
         return redirect(reverse("products"))
 
-    # Bag totals (use your context processor so delivery etc matches the site)
     current_bag = bag_contents(request)
     grand_total = current_bag["grand_total"]
-    stripe_total = round(grand_total * 100)  # pounds -> pence
+    stripe_total = round(grand_total * 100)
 
-    # -------------------------
-    # POST: create the Order
-    # -------------------------
     if request.method == "POST":
-        form_data = {
-            "full_name": request.POST.get("full_name"),
-            "email": request.POST.get("email"),
-            "phone_number": request.POST.get("phone_number"),
-            "country": request.POST.get("country"),
-            "postcode": request.POST.get("postcode"),
-            "town_or_city": request.POST.get("town_or_city"),
-            "street_address1": request.POST.get("street_address1"),
-            "street_address2": request.POST.get("street_address2"),
-            "county": request.POST.get("county"),
-        }
-        order_form = OrderForm(form_data)
+        # Persist save_info choice so webhook-created order can later update profile (optional step)
+        save_info = request.POST.get("save_info")
+        request.session["save_info"] = True if save_info else False
 
-        if order_form.is_valid():
-            order = order_form.save(commit=False)
+        client_secret = request.POST.get("client_secret", "")
+        if "_secret" not in client_secret:
+            messages.error(request, "Payment reference missing. Please try again.")
+            return redirect(reverse("checkout"))
 
-            # Grab client_secret from the hidden input (Stripe injects it on page)
-            client_secret = request.POST.get("client_secret", "")
-            # client_secret looks like: "pi_xxx_secret_yyy"
-            stripe_pid = client_secret.split("_secret")[0] if "_secret" in client_secret else ""
-            order.stripe_pid = stripe_pid
+        pid = client_secret.split("_secret")[0]
 
-            order.original_bag = bag  # if your Order model uses JSONField this is fine
-            order.save()
+        # ✅ Redirect to success page by pid; webhook will create the order shortly
+        return redirect(reverse("checkout_success", args=[pid]))
 
-            # Create line items
-            try:
-                for item_id, item_data in bag.items():
-                    product = get_object_or_404(Product, pk=item_id)
-
-                    # If you use sizes/variants (dict), handle both cases
-                    if isinstance(item_data, int):
-                        OrderLineItem.objects.create(
-                            order=order,
-                            product=product,
-                            quantity=item_data,
-                        )
-                    else:
-                        # e.g. {"items_by_size": {"s": 1, "m": 2}}
-                        for size, quantity in item_data.get("items_by_size", {}).items():
-                            OrderLineItem.objects.create(
-                                order=order,
-                                product=product,
-                                quantity=quantity,
-                                product_size=size,
-                            )
-
-            except Exception as e:
-                print("ERROR creating line items:", e)
-                order.delete()
-                messages.error(request, "Sorry, there was a problem processing your order.")
-                return redirect(reverse("view_bag"))
-
-            # Clear bag
-            request.session["bag"] = {}
-
-            # Send confirmation email (simple + safe for dev)
-            try:
-                subject = f"Order Confirmation - {order.order_number}"
-                message = render_to_string(
-                    "checkout/confirmation_emails/confirmation_email_body.txt",
-                    {"order": order, "contact_email": settings.DEFAULT_FROM_EMAIL},
-                )
-                send_mail(
-                    subject,
-                    message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [order.email],
-                )
-                # if your model has email_sent boolean
-                if hasattr(order, "email_sent"):
-                    order.email_sent = True
-                    order.save(update_fields=["email_sent"])
-            except Exception as e:
-                print("EMAIL SEND ERROR:", e)
-                # Don't block checkout if email fails in dev
-
-            return redirect(reverse("checkout_success", args=[order.order_number]))
-        else:
-            messages.error(
-                request,
-                "There was an error with your form. Please double check your information.",
-            )
-
-    # -------------------------
     # GET: show checkout + intent
-    # -------------------------
-    else:
-        order_form = OrderForm()
+    order_form = OrderForm()
 
-        try:
-            intent = stripe.PaymentIntent.create(
-                amount=stripe_total,
-                currency=settings.STRIPE_CURRENCY,
-            )
-        except Exception as e:
-            print("STRIPE INTENT ERROR:", e)
-            messages.error(request, "Sorry, our payment system is unavailable right now.")
-            return redirect(reverse("view_bag"))
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=stripe_total,
+            currency=settings.STRIPE_CURRENCY,
+        )
+    except Exception as e:
+        print("STRIPE INTENT ERROR:", e)
+        messages.error(request, "Sorry, our payment system is unavailable right now.")
+        return redirect(reverse("view_bag"))
 
-        client_secret = intent.client_secret
-
-    template = "checkout/checkout.html"
     context = {
         "order_form": order_form,
         "stripe_public_key": settings.STRIPE_PUBLIC_KEY,
-        "client_secret": client_secret,
+        "client_secret": intent.client_secret,
     }
-    return render(request, template, context)
+    return render(request, "checkout/checkout.html", context)
 
 
-def checkout_success(request, order_number):
+def checkout_success(request, pid):
     """
-    Display checkout success page
+    Success page waits briefly for the webhook to create the Order.
     """
-    order = get_object_or_404(Order, order_number=order_number)
-    messages.success(request, f"Order successfully processed! Your order number is {order_number}.")
-    return render(request, "checkout/checkout_success.html", {"order": order})
+    # Poll for a short period to allow webhook creation
+    # (Stripe/webhook can be slightly delayed)
+    import time
+
+    order = None
+    for _ in range(10):  # up to ~10 seconds
+        try:
+            order = Order.objects.get(stripe_pid=pid)
+            break
+        except Order.DoesNotExist:
+            time.sleep(1)
+
+    if not order:
+        messages.info(
+            request,
+            "Your payment was received. We're finalising your order—please refresh in a moment.",
+        )
+        # Render a lightweight “pending” success page; you can reuse checkout_success template
+        return render(request, "checkout/checkout_success.html", {"order": None, "pid": pid})
+
+    # Clear bag only once order exists
+    request.session["bag"] = {}
+
+    messages.success(request, f"Order successfully processed! Your order number is {order.order_number}.")
+    return render(request, "checkout/checkout_success.html", {"order": order, "pid": pid})
