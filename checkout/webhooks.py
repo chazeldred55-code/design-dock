@@ -12,15 +12,14 @@ def webhook(request):
     """
     Receive Stripe webhooks and route them to the correct handler.
     """
-    stripe.api_key = settings.STRIPE_SECRET_KEY  # <-- add this
+    stripe.api_key = settings.STRIPE_SECRET_KEY
 
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
     wh_secret = getattr(settings, "STRIPE_WH_SECRET", "")
 
-    # Allow wiring/testing if secret not yet set (but make it visible)
+    # Allow wiring/testing if secret not yet set
     if not wh_secret:
-        print("⚠️ STRIPE_WH_SECRET not set. Webhook signature not verified.")
         return HttpResponse(status=200)
 
     try:
