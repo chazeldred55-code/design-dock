@@ -6,6 +6,8 @@ import time
 from django.http import HttpResponse
 
 from products.models import Product
+from profiles.models import UserProfile
+
 from .models import Order, OrderLineItem
 from .utils import send_confirmation_email
 
@@ -28,20 +30,27 @@ class StripeWH_Handler:
         Handle the payment_intent.succeeded webhook from Stripe.
 
         Strategy (course-aligned):
-        - Read bag + save_info from PaymentIntent metadata.
+        - Read bag + save_info + username from PaymentIntent metadata.
         - Normalise Stripe shipping details ("" -> None).
+        - Resolve UserProfile (optional for anonymous checkout).
+        - If save_info is true, update profile default delivery info.
         - Try up to 5 times over ~5 seconds to find an existing Order
           created by the normal checkout POST (avoids duplicates).
         - Match on customer details + grand_total + original_bag + stripe_pid.
         - If still not found, create the Order + lineitems from the bag metadata.
-        - Send confirmation email once (guarded by Order.email_sent).
+        - Attach user_profile to the order when available.
+        - Send confirmation email once (guarded by Order.email_sent if present).
         """
         intent = event["data"]["object"]
         pid = intent.get("id", "")
 
+        # -------------------------
+        # Metadata (bag, save_info, username)
+        # -------------------------
         metadata = intent.get("metadata") or {}
         bag_str = metadata.get("bag", "")
         save_info = metadata.get("save_info", "")
+        username = metadata.get("username", "")
 
         # If metadata isn't present (e.g. wiring / test events), return 200
         if not bag_str:
@@ -59,7 +68,19 @@ class StripeWH_Handler:
                 status=200,
             )
 
+        # -------------------------
+        # Profile (optional)
+        # -------------------------
+        profile = None
+        if username and username != "AnonymousUser":
+            try:
+                profile = UserProfile.objects.get(user__username=username)
+            except UserProfile.DoesNotExist:
+                profile = None
+
+        # -------------------------
         # Pull billing + shipping + totals from the PaymentIntent
+        # -------------------------
         charges = (intent.get("charges") or {}).get("data", [])
         billing_details = (charges[0].get("billing_details") if charges else {}) or {}
 
@@ -73,14 +94,28 @@ class StripeWH_Handler:
         email = intent.get("receipt_email") or billing_details.get("email") or ""
 
         # Normalise Stripe blanks to None where appropriate
-        # (Stripe often sends "" which isn't the same as NULL/None in DB)
         for k in ("line1", "line2", "city", "state", "postal_code", "country"):
             if address.get(k) == "":
                 address[k] = None
         if shipping.get("phone") == "":
             shipping["phone"] = None
 
-        # ---- Attempt to find an existing order (avoid duplicates) ----
+        # -------------------------
+        # Update profile defaults (if requested)
+        # -------------------------
+        if profile and save_info == "true":
+            profile.default_phone_number = shipping.get("phone")
+            profile.default_country = address.get("country")
+            profile.default_postcode = address.get("postal_code")
+            profile.default_town_or_city = address.get("city")
+            profile.default_street_address1 = address.get("line1")
+            profile.default_street_address2 = address.get("line2")
+            profile.default_county = address.get("state")
+            profile.save()
+
+        # -------------------------
+        # Attempt to find an existing order (avoid duplicates)
+        # -------------------------
         order_exists = False
         order = None
         attempt = 1
@@ -107,8 +142,12 @@ class StripeWH_Handler:
                 attempt += 1
                 time.sleep(1)
 
-        # If found, we're done (order already created by checkout POST)
         if order_exists:
+            # Safety net: attach profile if missing
+            if profile and getattr(order, "user_profile_id", None) is None:
+                order.user_profile = profile
+                order.save(update_fields=["user_profile"])
+
             # Send email once (guarded)
             if hasattr(order, "email_sent"):
                 if not order.email_sent:
@@ -119,16 +158,22 @@ class StripeWH_Handler:
                 send_confirmation_email(order)
 
             return HttpResponse(
-                content=f"Webhook received: payment_intent.succeeded | VERIFIED order exists | Order: {order.order_number}",
+                content=(
+                    "Webhook received: payment_intent.succeeded | "
+                    f"VERIFIED order exists | Order: {order.order_number}"
+                ),
                 status=200,
             )
 
-        # ---- Otherwise create the order here in the webhook ----
+        # -------------------------
+        # Otherwise create the order here in the webhook
+        # -------------------------
         created_in_webhook = True
         created_order = None
 
         try:
             created_order = Order.objects.create(
+                user_profile=profile,
                 full_name=shipping.get("name") or "",
                 email=email,
                 phone_number=shipping.get("phone") or "",
@@ -169,17 +214,14 @@ class StripeWH_Handler:
                             product_size=size,
                         )
 
-            # Totals are computed by OrderLineItem.save() -> order.update_total()
-            # Optional sanity check: you can compare totals if you want
-            # if float(created_order.grand_total) != float(grand_total):
-            #     pass
-
         except Exception as e:
-            # If anything went wrong, delete order if it was created and return 500
             if created_order:
                 created_order.delete()
             return HttpResponse(
-                content=f"Webhook received: payment_intent.succeeded | ERROR creating order: {e}",
+                content=(
+                    "Webhook received: payment_intent.succeeded | "
+                    f"ERROR creating order: {e}"
+                ),
                 status=500,
             )
 
