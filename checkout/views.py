@@ -12,6 +12,9 @@ from .forms import OrderForm
 from .models import Order, OrderLineItem
 from products.models import Product
 
+from profiles.models import UserProfile
+from profiles.forms import UserProfileForm
+
 
 @require_POST
 def cache_checkout_data(request):
@@ -62,7 +65,6 @@ def checkout(request):
     stripe_total = round(grand_total * 100)
 
     if request.method == "POST":
-        # Build order data from the form POST
         form_data = {
             "full_name": request.POST.get("full_name"),
             "email": request.POST.get("email"),
@@ -74,6 +76,7 @@ def checkout(request):
             "street_address2": request.POST.get("street_address2"),
             "county": request.POST.get("county"),
         }
+
         order_form = OrderForm(form_data)
 
         if order_form.is_valid():
@@ -89,7 +92,6 @@ def checkout(request):
             order.original_bag = json.dumps(bag)
             order.save()
 
-            # Create line items
             for item_id, item_data in bag.items():
                 try:
                     product = Product.objects.get(id=item_id)
@@ -105,7 +107,6 @@ def checkout(request):
                         quantity=item_data,
                     )
                 else:
-                    # item_data is a dict of sizes -> quantities
                     for size, quantity in item_data.get("items_by_size", {}).items():
                         OrderLineItem.objects.create(
                             order=order,
@@ -114,19 +115,32 @@ def checkout(request):
                             product_size=size,
                         )
 
-            # Persist save_info choice (used later for profile updates if you do that step)
             save_info = request.POST.get("save_info")
             request.session["save_info"] = True if save_info else False
 
             return redirect(reverse("checkout_success", args=[order.order_number]))
-        else:
-            messages.error(
-                request,
-                "There was an error with your form. Please double check your information.",
-            )
 
-    # GET: Create PaymentIntent and render the checkout page
-    order_form = OrderForm()
+        messages.error(
+            request,
+            "There was an error with your form. Please double check your information.",
+        )
+
+    # GET (or POST invalid): prefill form for logged-in users
+    if request.user.is_authenticated:
+        profile = get_object_or_404(UserProfile, user=request.user)
+        order_form = OrderForm(initial={
+            "full_name": request.user.get_full_name(),
+            "email": request.user.email,
+            "phone_number": profile.default_phone_number,
+            "country": profile.default_country,
+            "postcode": profile.default_postcode,
+            "town_or_city": profile.default_town_or_city,
+            "street_address1": profile.default_street_address1,
+            "street_address2": profile.default_street_address2,
+            "county": profile.default_county,
+        })
+    else:
+        order_form = OrderForm()
 
     try:
         intent = stripe.PaymentIntent.create(
@@ -154,7 +168,25 @@ def checkout_success(request, order_number):
     save_info = request.session.get("save_info")
     order = get_object_or_404(Order, order_number=order_number)
 
-    # (Optional later step) If you have a profile model, you’d update it here using save_info
+    if request.user.is_authenticated:
+        profile = get_object_or_404(UserProfile, user=request.user)
+        order.user_profile = profile
+        order.save()
+
+        if save_info:
+            profile_data = {
+                "default_phone_number": order.phone_number,
+                "default_country": order.country,
+                "default_postcode": order.postcode,
+                "default_town_or_city": order.town_or_city,
+                "default_street_address1": order.street_address1,
+                "default_street_address2": order.street_address2,
+                "default_county": order.county,
+            }
+
+            user_profile_form = UserProfileForm(profile_data, instance=profile)
+            if user_profile_form.is_valid():
+                user_profile_form.save()
 
     if "bag" in request.session:
         del request.session["bag"]
