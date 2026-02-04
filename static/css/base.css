@@ -233,3 +233,25 @@ body {
 .allauth-form-inner-content a {
     color: #0dcaf0; /* Bootstrap text-info */
 }
+/* --- Custom Clearable File Input (Product image widget) --- */
+.btn-file {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-file input[type="file"] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Make the "Remove" checkbox match Bootstrap danger styling better */
+.custom-control-input:checked ~ .custom-control-label::before {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  border-radius: 0;
+}

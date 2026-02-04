@@ -6,7 +6,7 @@
 <div class="container header-container">
     <div class="row">
         <div class="col">
-            <h2 class="logo-font mb-4">Edit a Product</h2>
+            <h2 class="logo-font mb-4">Add a Product</h2>
         </div>
     </div>
 </div>
@@ -18,7 +18,7 @@
         <div class="col-12 col-md-8 offset-md-2">
 
             <form method="POST"
-                  action="{% url 'edit_product' product.id %}"
+                  action="{% url 'add_product' %}"
                   class="form"
                   enctype="multipart/form-data">
 
@@ -34,12 +34,12 @@
                 {% endfor %}
 
                 <div class="text-right">
-                    <a href="{% url 'product_detail' product.id %}"
+                    <a href="{% url 'products' %}"
                        class="btn btn-outline-black rounded-0">
                         Cancel
                     </a>
                     <button class="btn btn-black rounded-0" type="submit">
-                        Update Product
+                        Add Product
                     </button>
                 </div>
 

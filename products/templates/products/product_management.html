@@ -1,0 +1,84 @@
+{# products/templates/products/product_management.html #}
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block extra_title %} | Product Management{% endblock %}
+
+{% block page_header %}
+<div class="container header-container">
+  <div class="row">
+    <div class="col"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="overlay"></div>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col text-center mt-3">
+      <h2 class="logo-font">Product Management</h2>
+      <hr class="w-50 mb-1">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+      <hr>
+      {# If your view passes "product", this will show Add vs Edit automatically #}
+      {% if product %}
+        <h5 class="text-muted">Edit a Product</h5>
+      {% else %}
+        <h5 class="text-muted">Add a Product</h5>
+      {% endif %}
+      <hr>
+
+      <form method="POST" action="" class="form mb-2" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {# Render all fields, but DO NOT render the image field with crispy (prevents duplicate label) #}
+        {% for field in form %}
+          {% if field.name != 'image' %}
+            {{ field|as_crispy_field }}
+          {% else %}
+            {{ field }}
+          {% endif %}
+        {% endfor %}
+
+        <div class="text-right mt-3">
+          <a class="btn btn-outline-black rounded-0" href="{% url 'products' %}">Cancel</a>
+          <button class="btn btn-black rounded-0" type="submit">
+            {% if product %}
+              Update Product
+            {% else %}
+              Add Product
+            {% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block postloadjs %}
+{{ block.super }}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // This targets the file input inside your custom widget
+    const newImageInput = document.querySelector('input[type="file"]');
+    if (!newImageInput) return;
+
+    newImageInput.addEventListener("change", function () {
+      const file = newImageInput.files && newImageInput.files[0];
+      const filename = file ? file.name : "";
+      const filenamePara = document.getElementById("filename");
+
+      if (filenamePara) {
+        filenamePara.textContent = filename ? `Image will be set to: ${filename}` : "";
+      }
+    });
+  });
+</script>
+{% endblock %}
