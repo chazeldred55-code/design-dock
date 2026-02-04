@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "bag",
     "checkout.apps.CheckoutConfig",
     "home",
+    "profiles",
 ]
 
 SITE_ID = 1

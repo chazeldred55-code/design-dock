@@ -10,6 +10,16 @@ from products.models import Product
 
 class Order(models.Model):
     order_number = models.CharField(max_length=32, null=False, editable=False)
+
+    # Link orders to a user's profile (optional for guest checkout)
+    user_profile = models.ForeignKey(
+        "profiles.UserProfile",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
+    )
+
     full_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(max_length=254, null=False, blank=False)
     phone_number = models.CharField(max_length=20, null=False, blank=False)
@@ -36,19 +46,19 @@ class Order(models.Model):
         max_digits=6,
         decimal_places=2,
         null=False,
-        default=0
+        default=0,
     )
     order_total = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         null=False,
-        default=0
+        default=0,
     )
     grand_total = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         null=False,
-        default=0
+        default=0,
     )
 
     def _generate_order_number(self):
@@ -65,7 +75,8 @@ class Order(models.Model):
         self.order_total = (
             self.lineitems.aggregate(Sum("lineitem_total"))[
                 "lineitem_total__sum"
-            ] or 0
+            ]
+            or 0
         )
 
         if self.order_total < settings.FREE_DELIVERY_THRESHOLD:
@@ -107,22 +118,14 @@ class OrderLineItem(models.Model):
         blank=False,
         on_delete=models.CASCADE,
     )
-    product_size = models.CharField(
-        max_length=2,
-        null=True,
-        blank=True
-    )
-    quantity = models.IntegerField(
-        null=False,
-        blank=False,
-        default=0
-    )
+    product_size = models.CharField(max_length=2, null=True, blank=True)
+    quantity = models.IntegerField(null=False, blank=False, default=0)
     lineitem_total = models.DecimalField(
         max_digits=6,
         decimal_places=2,
         null=False,
         blank=False,
-        editable=False
+        editable=False,
     )
 
     def save(self, *args, **kwargs):
