@@ -6,6 +6,8 @@ from django.db.models.functions import Lower
 from .models import Product, Category
 from .forms import ProductForm
 
+from django.contrib.auth.decorators import login_required
+
 
 def all_products(request):
     """A view to show all products, including sorting and search queries"""
