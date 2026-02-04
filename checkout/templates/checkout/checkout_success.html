@@ -52,10 +52,17 @@
         <strong>Order number:</strong> {{ order.order_number }}
       </p>
 
-      <a href="{% url 'products' %}" class="btn btn-black rounded-0">
-        <span class="icon"><i class="fas fa-tags"></i></span>
-        <span class="font-weight-bold">Check out the latest deals!</span>
-      </a>
+      {% if from_profile %}
+        <a href="{% url 'profile' %}" class="btn btn-black rounded-0">
+          <span class="icon"><i class="fas fa-user"></i></span>
+          <span class="font-weight-bold">Back to Profile</span>
+        </a>
+      {% else %}
+        <a href="{% url 'products' %}" class="btn btn-black rounded-0">
+          <span class="icon"><i class="fas fa-tags"></i></span>
+          <span class="font-weight-bold">Check out the latest deals!</span>
+        </a>
+      {% endif %}
     </div>
 
     <!-- Right column -->
