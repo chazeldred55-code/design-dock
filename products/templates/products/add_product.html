@@ -54,19 +54,27 @@
 {{ block.super }}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const newImageInput = document.querySelector('input[type="file"]');
+    // Prefer the course-style id if your widget template uses it
+    const newImageInput =
+      document.getElementById("new-image") ||
+      document.querySelector('input[type="file"]');
+
     if (!newImageInput) return;
 
     newImageInput.addEventListener("change", function () {
       const file = newImageInput.files && newImageInput.files[0];
       const filename = file ? file.name : "";
-      const filenamePara = document.getElementById("filename");
 
-      if (filenamePara) {
-        filenamePara.textContent = filename
-          ? `Image will be set to: ${filename}`
-          : "";
-      }
+      // Prefer the course-style id; fallback to a class if you used one instead
+      const filenamePara =
+        document.getElementById("filename") ||
+        document.querySelector(".filename");
+
+      if (!filenamePara) return;
+
+      filenamePara.textContent = filename
+        ? `Image will be set to: ${filename}`
+        : "";
     });
   });
 </script>
