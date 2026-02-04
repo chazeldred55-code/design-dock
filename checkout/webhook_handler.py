@@ -3,13 +3,15 @@
 import json
 import time
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django.http import HttpResponse
+from django.template.loader import render_to_string
 
 from products.models import Product
 from profiles.models import UserProfile
 
 from .models import Order, OrderLineItem
-from .utils import send_confirmation_email
 
 
 class StripeWH_Handler:
@@ -17,6 +19,33 @@ class StripeWH_Handler:
 
     def __init__(self, request):
         self.request = request
+
+    def _send_confirmation_email(self, order):
+        """
+        Send the user a confirmation email.
+        Uses text templates in checkout/templates/checkout/.
+        """
+        cust_email = order.email
+
+        subject = render_to_string(
+            "checkout/confirmation_email_subject.txt",
+            {"order": order},
+        ).strip()
+
+        body = render_to_string(
+            "checkout/confirmation_email_body.txt",
+            {
+                "order": order,
+                "contact_email": settings.DEFAULT_FROM_EMAIL,
+            },
+        )
+
+        send_mail(
+            subject,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [cust_email],
+        )
 
     def handle_event(self, event):
         """Handle unknown/unexpected webhook events."""
@@ -151,11 +180,11 @@ class StripeWH_Handler:
             # Send email once (guarded)
             if hasattr(order, "email_sent"):
                 if not order.email_sent:
-                    send_confirmation_email(order)
+                    self._send_confirmation_email(order)
                     order.email_sent = True
                     order.save(update_fields=["email_sent"])
             else:
-                send_confirmation_email(order)
+                self._send_confirmation_email(order)
 
             return HttpResponse(
                 content=(
@@ -168,7 +197,6 @@ class StripeWH_Handler:
         # -------------------------
         # Otherwise create the order here in the webhook
         # -------------------------
-        created_in_webhook = True
         created_order = None
 
         try:
@@ -225,20 +253,20 @@ class StripeWH_Handler:
                 status=500,
             )
 
-        # Send confirmation email once
+        # Send confirmation email once (guarded)
         if hasattr(created_order, "email_sent"):
             if not created_order.email_sent:
-                send_confirmation_email(created_order)
+                self._send_confirmation_email(created_order)
                 created_order.email_sent = True
                 created_order.save(update_fields=["email_sent"])
         else:
-            send_confirmation_email(created_order)
+            self._send_confirmation_email(created_order)
 
         return HttpResponse(
             content=(
                 "Webhook received: payment_intent.succeeded | "
                 f"CREATED order in webhook handler | Order: {created_order.order_number} | "
-                f"created_in_webhook={created_in_webhook} | save_info={save_info}"
+                f"save_info={save_info}"
             ),
             status=200,
         )
