@@ -32,7 +32,7 @@ load_dotenv(BASE_DIR / ".env")
 # --------------------------------------------------
 SECRET_KEY = os.environ.get("SECRET_KEY", get_random_secret_key())
 
-DEBUG = os.environ.get("DEBUG", "True") == "True"
+DEBUG = "DEVELOPMENT" in os.environ
 
 ALLOWED_HOSTS = [
     h.strip()
