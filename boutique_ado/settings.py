@@ -1,18 +1,15 @@
 """
 Django settings for boutique_ado project.
-Clean, single-source settings.py
+Clean, CI-aligned, Heroku-ready settings.py
 """
 
 from pathlib import Path
 import os
-if os.path.isfile('env.py'):
-    import env
-
 from decimal import Decimal
 
-from django.core.management.utils import get_random_secret_key
-from dotenv import load_dotenv
 import dj_database_url
+from dotenv import load_dotenv
+from django.core.management.utils import get_random_secret_key
 
 
 # --------------------------------------------------
@@ -24,6 +21,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --------------------------------------------------
 # ENVIRONMENT
 # --------------------------------------------------
+if os.path.isfile("env.py"):
+    import env  # noqa
+
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -31,13 +31,17 @@ load_dotenv(BASE_DIR / ".env")
 # SECURITY
 # --------------------------------------------------
 SECRET_KEY = os.environ.get("SECRET_KEY", get_random_secret_key())
+
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.environ.get(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
-    "adoboutique1-2bab1d876acb.herokuapp.com"
-).split(",")
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get(
+        "ALLOWED_HOSTS",
+        "localhost,127.0.0.1,adoboutique1.herokuapp.com,adoboutique1-2bab1d876acb.herokuapp.com",
+    ).split(",")
+    if h.strip()
+]
 
 
 # --------------------------------------------------
@@ -53,7 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
 
-    # Third party
+    # Third-party
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -209,6 +213,7 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 FREE_DELIVERY_THRESHOLD = Decimal(
     os.environ.get("FREE_DELIVERY_THRESHOLD", "50")
 )
+
 STANDARD_DELIVERY_PERCENTAGE = Decimal(
     os.environ.get("STANDARD_DELIVERY_PERCENTAGE", "10")
 )
