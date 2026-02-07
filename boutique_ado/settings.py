@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "crispy_forms",
     "crispy_bootstrap4",
+    "storages",
 
     # Project apps
     "products",
@@ -148,9 +149,7 @@ TEMPLATES = [
 # DATABASE
 # --------------------------------------------------
 DATABASES = {
-    "default": dj_database_url.parse(
-        os.environ.get("DATABASE_URL", "")
-    )
+    "default": dj_database_url.parse(os.environ.get("DATABASE_URL", ""))
 }
 
 
@@ -175,7 +174,7 @@ USE_TZ = True
 
 
 # --------------------------------------------------
-# STATIC FILES
+# STATIC FILES (LOCAL DEFAULT)
 # --------------------------------------------------
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -183,10 +182,33 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # --------------------------------------------------
-# MEDIA FILES
+# MEDIA FILES (LOCAL DEFAULT)
 # --------------------------------------------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+# --------------------------------------------------
+# AWS / S3 (PRODUCTION)
+# --------------------------------------------------
+if "USE_AWS" in os.environ:
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
+
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+    # Static files
+    STATICFILES_STORAGE = "custom_storages.StaticStorage"
+    STATICFILES_LOCATION = "static"
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
+
+    # Media files
+    DEFAULT_FILE_STORAGE = "custom_storages.MediaStorage"
+    MEDIAFILES_LOCATION = "media"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
 
 # --------------------------------------------------
@@ -210,9 +232,7 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 # --------------------------------------------------
 # BAG / DELIVERY
 # --------------------------------------------------
-FREE_DELIVERY_THRESHOLD = Decimal(
-    os.environ.get("FREE_DELIVERY_THRESHOLD", "50")
-)
+FREE_DELIVERY_THRESHOLD = Decimal(os.environ.get("FREE_DELIVERY_THRESHOLD", "50"))
 
 STANDARD_DELIVERY_PERCENTAGE = Decimal(
     os.environ.get("STANDARD_DELIVERY_PERCENTAGE", "10")
