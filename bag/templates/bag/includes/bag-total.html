@@ -1,0 +1,11 @@
+<div class="text-right">
+    <p class="mb-1">Bag Total: <strong>£{{ total }}</strong></p>
+    <p class="mb-1">Delivery: <strong>£{{ delivery }}</strong></p>
+    <p class="mb-3 h5">Grand Total: <strong>£{{ grand_total }}</strong></p>
+
+    {% if free_delivery_delta > 0 %}
+        <p class="mb-3 text-muted small">
+            Spend <strong>£{{ free_delivery_delta }}</strong> more for free delivery!
+        </p>
+    {% endif %}
+</div>

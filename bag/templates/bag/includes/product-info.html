@@ -1,0 +1,15 @@
+<div class="col-12 col-sm-3">
+    <p class="mb-1"><strong>{{ item.product.name }}</strong></p>
+
+    {% if item.size %}
+        <p class="small text-muted mb-1">Size: {{ item.size|upper }}</p>
+    {% endif %}
+
+    {% if item.product.category %}
+        <p class="small text-muted mb-1">
+            {{ item.product.category.friendly_name|default:item.product.category.name }}
+        </p>
+    {% endif %}
+
+    <p class="mb-0 small text-muted">ID: {{ item.item_id }}</p>
+</div>
