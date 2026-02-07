@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ENVIRONMENT
 # --------------------------------------------------
 if os.path.isfile("env.py"):
-    import env  # noqa
+    import env  # noqa: F401
 
 load_dotenv(BASE_DIR / ".env")
 
@@ -233,10 +233,7 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 # BAG / DELIVERY
 # --------------------------------------------------
 FREE_DELIVERY_THRESHOLD = Decimal(os.environ.get("FREE_DELIVERY_THRESHOLD", "50"))
-
-STANDARD_DELIVERY_PERCENTAGE = Decimal(
-    os.environ.get("STANDARD_DELIVERY_PERCENTAGE", "10")
-)
+STANDARD_DELIVERY_PERCENTAGE = Decimal(os.environ.get("STANDARD_DELIVERY_PERCENTAGE", "10"))
 
 
 # --------------------------------------------------
@@ -249,7 +246,18 @@ STRIPE_WH_SECRET = os.getenv("STRIPE_WH_SECRET", "")
 
 
 # --------------------------------------------------
-# EMAIL (DEV)
+# EMAIL
 # --------------------------------------------------
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "noreply@boutiqueado.com"
+if "DEVELOPMENT" in os.environ:
+    # Development: print emails to terminal
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = "boutiqueado@example.com"
+else:
+    # Production: Gmail SMTP
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_USE_TLS = True
+    EMAIL_PORT = 587
+    EMAIL_HOST = "smtp.gmail.com"
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASS = os.environ.get("EMAIL_HOST_PASS", "")
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
