@@ -1,0 +1,73 @@
+<div class="col-12 col-sm-3 mt-3 mt-sm-0">
+
+    <!-- Quantity Update Form -->
+    <form class="form update-form"
+          method="POST"
+          action="{% url 'adjust_bag' item.item_id %}">
+        {% csrf_token %}
+
+        <!-- Quantity label -->
+        <label for="id_qty_{{ item.item_id }}" class="small text-muted">
+            Quantity
+        </label>
+
+        <!-- Quantity input group -->
+        <div class="input-group input-group-sm">
+
+            <!-- Decrement -->
+            <div class="input-group-prepend">
+                <button type="button"
+                        class="decrement-qty btn btn-sm btn-outline-black"
+                        data-item_id="{{ item.item_id }}"
+                        id="decrement-qty_{{ item.item_id }}">
+                    <span class="icon">
+                        <i class="fas fa-minus"></i>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Input -->
+            <input class="form-control form-control-sm qty_input"
+                   type="number"
+                   name="quantity"
+                   value="{{ item.quantity }}"
+                   min="1"
+                   max="99"
+                   data-item_id="{{ item.item_id }}"
+                   id="id_qty_{{ item.item_id }}">
+
+            <!-- Increment -->
+            <div class="input-group-append">
+                <button type="button"
+                        class="increment-qty btn btn-sm btn-outline-black"
+                        data-item_id="{{ item.item_id }}"
+                        id="increment-qty_{{ item.item_id }}">
+                    <span class="icon">
+                        <i class="fas fa-plus"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Size (if product has sizes) -->
+        {% if item.size %}
+            <input type="hidden" name="product_size" value="{{ item.size }}">
+        {% endif %}
+
+        <!-- Update / Remove links -->
+        <div class="mt-2">
+            <a class="update-link text-info small">
+                Update
+            </a> |
+            <a class="remove-item text-danger small"
+               id="remove_{{ item.item_id }}"
+               data-url="{% url 'remove_from_bag' item.item_id %}"
+               {% if item.size %}
+                   data-product_size="{{ item.size }}"
+               {% endif %}>
+                Remove
+            </a>
+        </div>
+
+    </form>
+</div>
