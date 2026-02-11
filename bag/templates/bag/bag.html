@@ -4,9 +4,9 @@
 
 {% block page_header %}
 <div class="container header-container">
-    <div class="row">
-        <div class="col"></div>
-    </div>
+  <div class="row">
+    <div class="col"></div>
+  </div>
 </div>
 {% endblock %}
 
@@ -14,186 +14,230 @@
 <div class="overlay"></div>
 
 <div class="container mb-5">
-    <div class="row">
-        <div class="col">
-            <hr>
-            <h2 class="logo-font mb-4">Shopping Bag</h2>
-            <hr>
+
+  <!-- Header -->
+  <div class="row">
+    <div class="col mt-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 1rem;">
+        <div>
+          <h2 class="mb-1" style="font-weight: 800; color: var(--dd-text);">
+            Your Bag
+          </h2>
+          <p class="mb-0" style="color: var(--dd-muted);">
+            Review items, adjust quantities, then continue to secure checkout.
+          </p>
         </div>
+
+        <a href="{% url 'products' %}" class="btn btn-dd-outline text-uppercase">
+          <i class="fas fa-arrow-left mr-2"></i>Back to Templates
+        </a>
+      </div>
+
+      <hr class="mt-4" style="border-color: var(--dd-border);">
+    </div>
+  </div>
+
+  {% if bag_items %}
+
+    <!-- =========================
+         DESKTOP/TABLET (md and up)
+         ========================= -->
+    <div class="d-none d-md-block">
+
+      <!-- Items list -->
+      <div class="dd-card p-0 overflow-hidden">
+        <div class="p-3" style="border-bottom: 1px solid var(--dd-border);">
+          <div class="row" style="color: var(--dd-muted); font-size: .9rem;">
+            <div class="col-2">Preview</div>
+            <div class="col-4">Template</div>
+            <div class="col-2 text-right">Price</div>
+            <div class="col-2">Quantity</div>
+            <div class="col-2 text-right">Subtotal</div>
+          </div>
+        </div>
+
+        {% for item in bag_items %}
+          <div class="p-3" style="border-bottom: 1px solid var(--dd-border);">
+            <div class="row align-items-center">
+
+              <!-- Image -->
+              <div class="col-2">
+                {% if item.product.image %}
+                  <img class="img-fluid"
+                       src="{{ item.product.image.url }}"
+                       alt="{{ item.product.name }}"
+                       style="border-radius: 14px; border: 1px solid var(--dd-border);">
+                {% else %}
+                  <img class="img-fluid"
+                       src="{% static 'images/noimage.png' %}"
+                       alt="{{ item.product.name }}"
+                       style="border-radius: 14px; border: 1px solid var(--dd-border);">
+                {% endif %}
+              </div>
+
+              <!-- Details -->
+              <div class="col-4">
+                <div style="font-weight: 800; color: var(--dd-text);">
+                  {{ item.product.name }}
+                </div>
+
+                <div class="mt-2" style="color: var(--dd-muted); font-size: .92rem;">
+                  {% if item.size %}
+                    <span class="badge badge-white px-2 py-1 mr-1">Size: {{ item.size|upper }}</span>
+                  {% endif %}
+
+                  {% if item.product.category %}
+                    <span class="badge badge-white px-2 py-1">
+                      {{ item.product.category.friendly_name|default:item.product.category.name }}
+                    </span>
+                  {% endif %}
+                </div>
+
+                <div class="mt-2" style="color: var(--dd-muted); font-size: .85rem;">
+                  ID: {{ item.item_id }}
+                </div>
+              </div>
+
+              <!-- Price -->
+              <div class="col-2 text-right">
+                <div style="color: var(--dd-text); font-variant-numeric: tabular-nums;">
+                  £{{ item.product.price }}
+                </div>
+              </div>
+
+              <!-- Quantity include -->
+              <div class="col-2">
+                {% include "bag/includes/quantity-form.html" %}
+              </div>
+
+              <!-- Subtotal -->
+              <div class="col-2 text-right">
+                <div style="font-weight: 800; color: var(--dd-text); font-variant-numeric: tabular-nums;">
+                  £{{ item.product.price|calc_subtotal:item.quantity }}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Totals + Buttons -->
+      <div class="row">
+        <div class="col-12 col-md-6 offset-md-6 mt-4">
+          <div class="dd-card p-4">
+            {% include "bag/includes/bag-total.html" %}
+            <div class="text-right mt-3">
+              {% include "bag/includes/checkout-buttons.html" %}
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    {% if bag_items %}
+    <!-- =========================
+         MOBILE (sm and down)
+         ========================= -->
+    <div class="d-block d-md-none">
 
-        <!-- =========================
-             DESKTOP/TABLET (md and up)
-             ========================= -->
-        <div class="d-none d-md-block">
-            <div class="row">
-                <div class="col-12">
-
-                    {% for item in bag_items %}
-                        <div class="row align-items-center py-3 border-bottom">
-
-                            <!-- Image -->
-                            <div class="col-2">
-                                {% if item.product.image %}
-                                    <img class="img-fluid rounded"
-                                         src="{{ item.product.image.url }}"
-                                         alt="{{ item.product.name }}">
-                                {% else %}
-                                    <img class="img-fluid rounded"
-                                         src="{% static 'images/noimage.png' %}"
-                                         alt="{{ item.product.name }}">
-                                {% endif %}
-                            </div>
-
-                            <!-- Product details -->
-                            <div class="col-4">
-                                <p class="mb-1"><strong>{{ item.product.name }}</strong></p>
-
-                                {% if item.size %}
-                                    <p class="small text-muted mb-1">Size: {{ item.size|upper }}</p>
-                                {% endif %}
-
-                                {% if item.product.category %}
-                                    <p class="small text-muted mb-1">
-                                        {{ item.product.category.friendly_name|default:item.product.category.name }}
-                                    </p>
-                                {% endif %}
-
-                                <p class="mb-0 text-muted small">ID: {{ item.item_id }}</p>
-                            </div>
-
-                            <!-- Price -->
-                            <div class="col-2 text-right">
-                                <p class="mb-0">£{{ item.product.price }}</p>
-                            </div>
-
-                            <!-- Quantity (include) -->
-                            <div class="col-2">
-                                {% include "bag/includes/quantity-form.html" %}
-                            </div>
-
-                            <!-- Line total -->
-                            <div class="col-2 text-right">
-                                <p class="mb-0 font-weight-bold">
-                                    £{{ item.product.price|calc_subtotal:item.quantity }}
-                                </p>
-                            </div>
-
-                        </div>
-                    {% endfor %}
-
-                </div>
-            </div>
-
-            <!-- Totals + Buttons (desktop bottom) -->
-            <div class="row">
-                <div class="col-12 col-md-6 offset-md-6 mt-4">
-                    {% include "bag/includes/bag-total.html" %}
-                    <div class="text-right">
-                        {% include "bag/includes/checkout-buttons.html" %}
-                    </div>
-                </div>
-            </div>
+      <!-- Totals + Buttons at top (mobile UX) -->
+      <div class="dd-card p-4 mb-3">
+        {% include "bag/includes/bag-total.html" %}
+        <div class="text-right mt-3">
+          {% include "bag/includes/checkout-buttons.html" %}
         </div>
+        <p class="mt-3 mb-0" style="color: var(--dd-muted); font-size: .92rem;">
+          Bag contents are listed below.
+        </p>
+      </div>
 
-        <!-- =========================
-             MOBILE (sm and down)
-             ========================= -->
-        <div class="d-block d-md-none">
+      {% for item in bag_items %}
+        <div class="dd-card p-3 mb-3">
 
-            <!-- Totals + Buttons at top (mobile UX) -->
-            <div class="row">
-                <div class="col-12">
-                    {% include "bag/includes/bag-total.html" %}
-                    <div class="text-right">
-                        {% include "bag/includes/checkout-buttons.html" %}
-                    </div>
-                    <p class="mt-3 text-muted small">
-                        A summary of your bag contents is below.
-                    </p>
-                    <hr>
-                </div>
+          <div class="row">
+
+            {% include "bag/includes/product-image.html" %}
+            {% include "bag/includes/product-info.html" %}
+
+            <!-- Price + subtotal -->
+            <div class="col-12 col-sm-3 mt-3 mt-sm-0">
+              <p class="mb-1" style="color: var(--dd-muted); font-size: .92rem;">
+                Price: <span style="color: var(--dd-text);">£{{ item.product.price }}</span>
+              </p>
+              <p class="mb-0" style="font-weight: 800; color: var(--dd-text);">
+                Subtotal: £{{ item.product.price|calc_subtotal:item.quantity }}
+              </p>
             </div>
 
-            <!-- Bag items as grid -->
-            {% for item in bag_items %}
-                <div class="row mb-4">
+            <!-- Quantity -->
+            {% include "bag/includes/quantity-form.html" %}
 
-                    {% include "bag/includes/product-image.html" %}
-                    {% include "bag/includes/product-info.html" %}
-
-                    <!-- Price + subtotal -->
-                    <div class="col-12 col-sm-3 mt-3 mt-sm-0">
-                        <p class="mb-1 small text-muted">Price: £{{ item.product.price }}</p>
-                        <p class="mb-0 font-weight-bold">
-                            Subtotal: £{{ item.product.price|calc_subtotal:item.quantity }}
-                        </p>
-                    </div>
-
-                    <!-- Quantity form -->
-                    {% include "bag/includes/quantity-form.html" %}
-
-                </div>
-                <hr>
-            {% endfor %}
-
-            <!-- Back to top button -->
-            <div class="btt-button shadow-sm rounded-0 border border-black">
-                <a class="btt-link d-flex h-100">
-                    <i class="fas fa-arrow-up text-black mx-auto my-auto"></i>
-                </a>
-            </div>
+          </div>
 
         </div>
+      {% endfor %}
 
-    {% else %}
-        <div class="row">
-            <div class="col">
-                <p class="lead mb-4">Your bag is empty.</p>
-                <a href="{% url 'products' %}" class="btn btn-black rounded-0 text-uppercase">
-                    Keep Shopping
-                </a>
-            </div>
-        </div>
-    {% endif %}
+      <!-- Back to top -->
+      <div class="btt-button shadow-sm rounded-0"
+           style="background: rgba(255,255,255,.06); border: 1px solid var(--dd-border);">
+        <a class="btt-link d-flex h-100">
+          <i class="fas fa-arrow-up mx-auto my-auto" style="color: var(--dd-text);"></i>
+        </a>
+      </div>
+
+    </div>
+
+  {% else %}
+    <div class="dd-card p-4 mt-3">
+      <p class="lead mb-3" style="color: var(--dd-text);">
+        Your bag is empty.
+      </p>
+      <p class="mb-4" style="color: var(--dd-muted);">
+        Browse templates and add something to get started.
+      </p>
+      <a href="{% url 'products' %}" class="btn btn-dd-primary text-uppercase">
+        Browse Templates <i class="fas fa-arrow-right ml-2"></i>
+      </a>
+    </div>
+  {% endif %}
+
 </div>
 {% endblock %}
 
 {% block postloadjs %}
-    {{ block.super }}
-    {% include "products/includes/quantity_input_script.html" %}
+  {{ block.super }}
+  {% include "products/includes/quantity_input_script.html" %}
 
-    <script>
-        // Submit the update form when Update clicked
-        $(".update-link").click(function (e) {
-            e.preventDefault();
-            $(this).closest("div").find("form.update-form").submit();
-        });
+  <script>
+    // Submit the update form when Update clicked
+    $(".update-link").click(function (e) {
+      e.preventDefault();
+      $(this).closest("div").find("form.update-form").submit();
+    });
 
-        // Remove item (POST to /bag/remove/<itemId>/ with product_size)
-        $(".remove-item").click(function (e) {
-            e.preventDefault();
-            const csrfToken = "{{ csrf_token }}";
-            const itemId = $(this).attr("id").split("remove_")[1];
-            const size = $(this).data("product_size");
+    // Remove item (POST to /bag/remove/<itemId>/ with product_size)
+    $(".remove-item").click(function (e) {
+      e.preventDefault();
+      const csrfToken = "{{ csrf_token }}";
+      const itemId = $(this).attr("id").split("remove_")[1];
+      const size = $(this).data("product_size");
 
-            const url = `/bag/remove/${itemId}/`;
-            const data = {
-                csrfmiddlewaretoken: csrfToken,
-                product_size: size
-            };
+      const url = `/bag/remove/${itemId}/`;
+      const data = {
+        csrfmiddlewaretoken: csrfToken,
+        product_size: size
+      };
 
-            $.post(url, data).done(function () {
-                location.reload();
-            });
-        });
+      $.post(url, data).done(function () {
+        location.reload();
+      });
+    });
 
-        // Back to top
-        $(".btt-link").click(function (e) {
-            e.preventDefault();
-            window.scrollTo(0, 0);
-        });
-    </script>
+    // Back to top
+    $(".btt-link").click(function (e) {
+      e.preventDefault();
+      window.scrollTo(0, 0);
+    });
+  </script>
 {% endblock %}

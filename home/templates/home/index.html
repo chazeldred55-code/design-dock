@@ -3,28 +3,99 @@
 
 {% block page_header %}
 <div class="container header-container">
-    <div class="row">
-        <div class="col"></div>
-    </div>
+  <div class="row">
+    <div class="col"></div>
+  </div>
 </div>
 {% endblock %}
 
 {% block content %}
 <div class="overlay"></div>
 
-<div class="container h-100">
-    <div class="row h-100">
-        <div class="col-12 col-md-6 my-auto">
-            <h1 class="display-4 logo-font text-black">
-                Welcome to Boutique Ado
-            </h1>
-            <p class="lead text-muted">
-                Shop the latest products and special offers.
-            </p>
-            <a href="{% url 'products' %}" class="btn btn-black rounded-0 text-uppercase mt-2">
-                Shop Now
-            </a>
-        </div>
+<div class="container py-5">
+  <div class="row align-items-center min-vh-50">
+    <div class="col-12 col-lg-7">
+
+      <div class="mb-3">
+        <span class="badge badge-white px-3 py-2">
+          <i class="fas fa-bolt mr-2"></i>Design assets that ship faster
+        </span>
+      </div>
+
+      <h1 class="display-4 mb-3" style="color: var(--dd-text); font-weight: 800;">
+        Build better UI with
+        <span style="color: var(--dd-accent);">templates</span>,
+        components, and bundles.
+      </h1>
+
+      <p class="lead" style="color: var(--dd-muted); max-width: 52ch;">
+        Design-Dock is your workspace for reusable UI patterns—browse ready-made
+        templates, assemble bundles, and keep projects moving.
+      </p>
+
+      <div class="d-flex flex-wrap align-items-center mt-4" style="gap: .75rem;">
+        <a href="{% url 'products' %}" class="btn btn-dd-primary text-uppercase">
+          Browse Templates <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+
+        <a href="{% url 'products' %}" class="btn btn-dd-outline text-uppercase">
+          View Featured <i class="fas fa-star ml-2"></i>
+        </a>
+      </div>
+
+      <div class="mt-4 d-flex flex-wrap" style="gap: .75rem;">
+        <span class="badge badge-white px-3 py-2"><i class="fas fa-layer-group mr-2"></i>Curated Categories</span>
+        <span class="badge badge-white px-3 py-2"><i class="fas fa-shield-alt mr-2"></i>Secure Checkout</span>
+        <span class="badge badge-white px-3 py-2"><i class="fas fa-sync-alt mr-2"></i>Fast Iteration</span>
+      </div>
+
     </div>
+
+    <div class="col-12 col-lg-5 mt-4 mt-lg-0">
+
+      <div class="dd-card p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <div style="color: var(--dd-muted); font-size: .9rem;">This week</div>
+            <div style="font-weight: 700; font-size: 1.1rem;">Popular templates</div>
+          </div>
+          <span class="badge badge-white px-3 py-2"><i class="fas fa-fire mr-2"></i>Trending</span>
+        </div>
+
+        <div class="border-top" style="border-color: var(--dd-border) !important;"></div>
+
+        <div class="pt-3">
+          <div class="d-flex align-items-start mb-3">
+            <div class="dd-mark mr-3"><i class="fas fa-window-maximize"></i></div>
+            <div>
+              <div style="font-weight: 700;">Landing Page Kit</div>
+              <div style="color: var(--dd-muted); font-size: .95rem;">Hero, pricing, FAQ, CTA sections</div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start mb-3">
+            <div class="dd-mark mr-3"><i class="fas fa-th-large"></i></div>
+            <div>
+              <div style="font-weight: 700;">Dashboard Components</div>
+              <div style="color: var(--dd-muted); font-size: .95rem;">Cards, tables, filters, nav</div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start">
+            <div class="dd-mark mr-3"><i class="fas fa-shopping-cart"></i></div>
+            <div>
+              <div style="font-weight: 700;">E-commerce Blocks</div>
+              <div style="color: var(--dd-muted); font-size: .95rem;">Product grids, checkout UI, badges</div>
+            </div>
+          </div>
+
+          <a href="{% url 'products' %}" class="btn btn-dd-outline mt-4 w-100 text-uppercase">
+            Explore Everything <i class="fas fa-compass ml-2"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 {% endblock %}

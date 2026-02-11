@@ -3,116 +3,173 @@
 
 {% block page_header %}
 <div class="container header-container">
-    <div class="row">
-        <div class="col"></div>
-    </div>
+  <div class="row">
+    <div class="col"></div>
+  </div>
 </div>
 {% endblock %}
 
 {% block content %}
 <div class="overlay"></div>
 
-<div class="container-fluid">
-    <div class="row">
+<div class="container py-4">
+  <div class="row">
 
-        <!-- Product image -->
-        <div class="col-12 col-md-6 col-lg-4 offset-lg-2">
-            <div class="image-container my-5">
-                {% if product.image %}
-                    <a href="{{ product.image.url }}" target="_blank">
-                        <img class="card-img-top img-fluid"
-                             src="{{ product.image.url }}"
-                             alt="{{ product.name }}">
-                    </a>
-                {% else %}
-                    <a href="{% static 'images/noimage.png' %}" target="_blank">
-                        <img class="card-img-top img-fluid"
-                             src="{% static 'images/noimage.png' %}"
-                             alt="{{ product.name }}">
-                    </a>
-                {% endif %}
-            </div>
-        </div>
+    <!-- Preview -->
+    <div class="col-12 col-lg-6 mb-4">
+      <div class="dd-card overflow-hidden">
+        {% if product.image %}
+          <a href="{{ product.image.url }}" target="_blank" class="d-block">
+            <img
+              class="img-fluid"
+              src="{{ product.image.url }}"
+              alt="{{ product.name }}"
+              style="width:100%; height: 420px; object-fit: cover;"
+            >
+          </a>
+        {% else %}
+          <a href="{% static 'images/noimage.png' %}" target="_blank" class="d-block">
+            <img
+              class="img-fluid"
+              src="{% static 'images/noimage.png' %}"
+              alt="{{ product.name }}"
+              style="width:100%; height: 420px; object-fit: cover;"
+            >
+          </a>
+        {% endif %}
+      </div>
 
-        <!-- Product details -->
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="product-details-container mb-5 mt-md-5">
-
-                <p class="mb-0">{{ product.name }}</p>
-                <p class="lead mb-0 text-left font-weight-bold">£{{ product.price }}</p>
-
-                {% if product.category %}
-                    <p class="small mt-1 mb-0">
-                        <a class="text-muted"
-                           href="{% url 'products' %}?category={{ product.category.name }}">
-                            <i class="fas fa-tag mr-1"></i>
-                            {{ product.category.friendly_name|default:product.category.name }}
-                        </a>
-                    </p>
-                {% endif %}
-
-                {% if product.rating %}
-                    <small class="text-muted">
-                        <i class="fas fa-star mr-1"></i>{{ product.rating }} / 5
-                    </small>
-                {% else %}
-                    <small class="text-muted">No Rating</small>
-                {% endif %}
-
-                {% if product.description %}
-                    <p class="mt-3">{{ product.description }}</p>
-                {% endif %}
-
-                {% with product.has_sizes as s %}
-                <form class="form mt-3" action="{% url 'add_to_bag' product.id %}" method="POST">
-                    {% csrf_token %}
-
-                    <div class="form-row">
-
-                        {% if s %}
-                            <div class="col-12">
-                                <p class="mt-3"><strong>Size:</strong></p>
-                                <div class="form-group">
-                                    <select class="form-control rounded-0"
-                                            name="product_size"
-                                            id="id_product_size">
-                                        <option value="xs">XS</option>
-                                        <option value="s">S</option>
-                                        <option value="m" selected>M</option>
-                                        <option value="l">L</option>
-                                        <option value="xl">XL</option>
-                                    </select>
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        <div class="col-12 {% if s %}mt-2{% endif %}">
-                            <p class="mt-3"><strong>Quantity:</strong></p>
-                            <div class="form-group">
-                                <input class="form-control rounded-0"
-                                       type="number"
-                                       name="quantity"
-                                       value="1"
-                                       min="1"
-                                       max="99">
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <input type="submit" class="btn btn-black rounded-0 text-uppercase" value="Add to Bag">
-                            <a href="{% url 'products' %}" class="btn btn-outline-black rounded-0 text-uppercase">
-                                Keep Shopping
-                            </a>
-                        </div>
-
-                        <input type="hidden" name="redirect_url" value="{{ request.path }}">
-                    </div>
-                </form>
-                {% endwith %}
-
-            </div>
-        </div>
-
+      <div class="mt-3 d-flex flex-wrap" style="gap:.5rem;">
+        <span class="badge badge-white px-3 py-2">
+          <i class="fas fa-eye mr-2"></i>Preview opens in new tab
+        </span>
+        <span class="badge badge-white px-3 py-2">
+          <i class="fas fa-bolt mr-2"></i>Ready to use
+        </span>
+      </div>
     </div>
+
+    <!-- Details -->
+    <div class="col-12 col-lg-6">
+      <div class="dd-card p-4">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h2 class="mb-1" style="font-weight: 800; color: var(--dd-text);">
+              {{ product.name }}
+            </h2>
+
+            {% if product.category %}
+              <div class="mt-2">
+                <a class="text-decoration-none"
+                   href="{% url 'products' %}?category={{ product.category.name }}"
+                   style="color: var(--dd-muted);">
+                  <i class="fas fa-tag mr-1"></i>
+                  {{ product.category.friendly_name|default:product.category.name }}
+                </a>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="text-right">
+            <div class="badge badge-white px-3 py-2" style="font-weight: 800; font-size: 1rem;">
+              £{{ product.price }}
+            </div>
+
+            <div class="mt-2">
+              {% if product.rating %}
+                <small style="color: var(--dd-muted);">
+                  <i class="fas fa-star mr-1" style="color: var(--dd-warning);"></i>
+                  {{ product.rating }} / 5
+                </small>
+              {% else %}
+                <small style="color: var(--dd-muted);">No rating yet</small>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        {% if product.description %}
+          <div class="mt-4" style="color: var(--dd-text); opacity: .92; line-height: 1.6;">
+            {{ product.description }}
+          </div>
+        {% endif %}
+
+        <hr class="my-4" style="border-color: var(--dd-border);">
+
+        <!-- Purchase form (logic unchanged) -->
+        {% with product.has_sizes as s %}
+          <form class="form" action="{% url 'add_to_bag' product.id %}" method="POST">
+            {% csrf_token %}
+
+            <div class="form-row">
+
+              {% if s %}
+                <div class="col-12">
+                  <label for="id_product_size" class="mb-2" style="color: var(--dd-muted);">
+                    Size
+                  </label>
+                  <div class="form-group">
+                    <select class="form-control"
+                            style="background: rgba(255,255,255,.04);
+                                   color: var(--dd-text);
+                                   border: 1px solid var(--dd-border);
+                                   border-radius: 12px;"
+                            name="product_size"
+                            id="id_product_size">
+                      <option value="xs">XS</option>
+                      <option value="s">S</option>
+                      <option value="m" selected>M</option>
+                      <option value="l">L</option>
+                      <option value="xl">XL</option>
+                    </select>
+                  </div>
+                </div>
+              {% endif %}
+
+              <div class="col-12 {% if s %}mt-2{% endif %}">
+                <label class="mb-2" style="color: var(--dd-muted);">
+                  Quantity
+                </label>
+                <div class="form-group">
+                  <input class="form-control"
+                         style="background: rgba(255,255,255,.04);
+                                color: var(--dd-text);
+                                border: 1px solid var(--dd-border);
+                                border-radius: 12px;"
+                         type="number"
+                         name="quantity"
+                         value="1"
+                         min="1"
+                         max="99">
+                </div>
+              </div>
+
+              <div class="col-12 d-flex flex-wrap mt-2" style="gap:.75rem;">
+                <input type="submit"
+                       class="btn btn-dd-primary text-uppercase"
+                       value="Add to Bag">
+
+                <a href="{% url 'products' %}"
+                   class="btn btn-dd-outline text-uppercase">
+                  Back to Templates
+                </a>
+              </div>
+
+              <input type="hidden" name="redirect_url" value="{{ request.path }}">
+            </div>
+          </form>
+        {% endwith %}
+
+        <div class="mt-4" style="color: var(--dd-muted); font-size: .95rem;">
+          <i class="fas fa-lock mr-2"></i>Secure checkout powered by Stripe.
+        </div>
+
+      </div>
+    </div>
+
+  </div>
 </div>
 {% endblock %}

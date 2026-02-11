@@ -1,41 +1,93 @@
+/* checkout/static/checkout/css/checkout.css
+   Design-Dock checkout styling
+   (keeps Stripe Elements + crispy form fields consistent)
+*/
+
+/* Stripe card element + standard inputs */
 .StripeElement,
 .form-control {
-    box-sizing: border-box;
-    height: 40px;
-    padding: 10px 12px;
-    border: 1px solid #000;
-    border-radius: 0;
-    background-color: white;
-    color: #000;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 10px 12px;
+
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--dd-text);
+
+  border: 1px solid var(--dd-border);
+  border-radius: 12px;
+
+  transition: border-color 150ms ease, background 150ms ease;
 }
 
-.StripeElement--focus {
-    box-shadow: none;
+/* Make selects consistent */
+select.form-control {
+  height: 44px;
 }
 
-fieldset > legend {
-    font-size: 0.8rem;
-    margin-bottom: 5px;
+/* Focus states */
+.StripeElement--focus,
+.form-control:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: rgba(124, 58, 237, 0.55); /* accent glow */
+  background: rgba(255, 255, 255, 0.06);
 }
-/* Full-screen loading overlay (very obvious) */
-.loading-overlay{
+
+/* Placeholder */
+.form-control::placeholder {
+  color: rgba(229, 231, 235, 0.55);
+}
+
+/* Fieldset labels / legends */
+fieldset > legend,
+.fieldset-label {
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  color: var(--dd-muted);
+}
+
+/* Make crispy/Bootstrap help text match theme */
+.form-text,
+.text-muted {
+  color: var(--dd-muted) !important;
+}
+
+/* Full-screen loading overlay */
+.loading-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.7); /* darker = clearer */
+
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
-.loading-card{
+/* Uses dd-card styles too, but keep safe defaults */
+.loading-card {
   width: min(420px, 90vw);
-  background: #fff;
-  border-radius: 0.3rem;
+  border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid var(--dd-border);
+  box-shadow: var(--dd-shadow);
 }
 
-.loading-card h5{
-  font-weight: 700;
+.loading-card h5 {
+  font-weight: 800;
+  color: var(--dd-text);
+}
+
+.loading-card p {
+  color: var(--dd-muted);
+}
+
+/* Spinner color tweak (Bootstrap) */
+.spinner-border {
+  border-right-color: transparent;
 }

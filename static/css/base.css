@@ -1,53 +1,166 @@
+/* ---------------------------------------------
+   Design-Dock Theme (global)
+--------------------------------------------- */
+
+:root{
+    --dd-bg: #0b0f19;
+    --dd-surface: #0f172a;
+    --dd-surface-2: #111827;
+    --dd-text: #e5e7eb;
+    --dd-muted: #9ca3af;
+    --dd-border: rgba(255,255,255,.08);
+    --dd-shadow: 0 10px 30px rgba(0,0,0,.35);
+
+    --dd-accent: #7c3aed;
+    --dd-accent-2: #22c55e;
+    --dd-danger: #ef4444;
+    --dd-warning: #f59e0b;
+    --dd-info: #38bdf8;
+}
+
+/* Keep full-height layout */
 html,
 body {
     height: 100%;
 }
 
-body {
-    background: url('/media/homepage_background_cropped.jpg') no-repeat center center fixed;
-    background-size: cover;
-    color: #555;
-    font-family: 'Lato', sans-serif;
+body.dd-body {
+    /* Modern background (replaces boutique image look) */
+    background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(124,58,237,.25), transparent 60%),
+        radial-gradient(1000px 500px at 90% 20%, rgba(34,197,94,.18), transparent 55%),
+        linear-gradient(180deg, var(--dd-bg), #070a12);
+    color: var(--dd-text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* Spacer to push content below fixed header */
+/* Links */
+a {
+    color: var(--dd-accent);
+}
+a:hover {
+    color: rgba(124,58,237,.9);
+    text-decoration: none;
+}
+
+/* Spacer below fixed header */
 .header-container {
-    padding-top: 116px; /* mobile/tablet header height */
+    padding-top: 96px; /* smaller, cleaner header */
 }
 
-/* White overlay for pages */
+/* Optional overlay for “white page” pages. Keep but adapt to dark */
 .overlay {
     height: 100%;
     width: 100%;
     position: fixed;
     top: 0;
     left: 0;
-    background: #fff;
+    background: rgba(0,0,0,.15);
     z-index: -1;
 }
 
-/* Icons (Bulma-style utility) */
-.icon {
-    align-items: center;
-    display: inline-flex;
-    justify-content: center;
-    height: 1.5rem;
-    width: 1.5rem;
-}
-
+/* Utility */
 .logo-font {
     text-transform: uppercase;
+    letter-spacing: .08em;
 }
-
 .main-logo-link {
     width: fit-content;
 }
 
-/* Buttons */
+/* ---------------------------------------------
+   Design-Dock Navbar (matches base.html)
+--------------------------------------------- */
+
+.dd-nav {
+    background: rgba(15,23,42,.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-color: var(--dd-border) !important;
+}
+
+.dd-brand {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    color: var(--dd-text) !important;
+}
+
+.dd-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(124,58,237,.18);
+    border: 1px solid var(--dd-border);
+    box-shadow: var(--dd-shadow);
+}
+
+.dd-wordmark {
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.dd-toggler {
+    border-color: var(--dd-border) !important;
+}
+.navbar-light .navbar-toggler-icon {
+    filter: invert(1);
+    opacity: .9;
+}
+
+.dd-navlinks .nav-link,
+.dd-actions .nav-link {
+    color: var(--dd-text) !important;
+    opacity: .88;
+}
+.dd-navlinks .nav-link:hover,
+.dd-actions .nav-link:hover {
+    opacity: 1;
+}
+
+.dd-navicon {
+    margin-right: .35rem;
+    opacity: .9;
+}
+
+.dd-actionlink {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+.dd-total {
+    font-variant-numeric: tabular-nums;
+    color: var(--dd-text);
+    opacity: .92;
+}
+
+/* Dropdown */
+.dd-dropdown {
+    background: var(--dd-surface);
+    border: 1px solid var(--dd-border);
+    box-shadow: var(--dd-shadow);
+}
+.dd-dropdown .dropdown-item {
+    color: var(--dd-text);
+}
+.dd-dropdown .dropdown-item:hover {
+    background: rgba(255,255,255,.06);
+}
+
+/* ---------------------------------------------
+   Buttons (new theme)
+--------------------------------------------- */
+
+/* Keep old classes working, but style them “Design-Dock” */
 .shop-now-button,
 .btn-black {
-    background: black;
-    color: white;
+    background: var(--dd-accent);
+    color: #fff;
+    border: 1px solid rgba(124,58,237,.35);
 }
 
 .shop-now-button:hover,
@@ -56,44 +169,75 @@ body {
 .btn-black:hover,
 .btn-black:active,
 .btn-black:focus {
-    background: #222;
-    color: white;
+    background: rgba(124,58,237,.92);
+    color: #fff;
 }
 
-/* Outline black button */
+/* Outline buttons */
 .btn-outline-black {
-    background: white;
-    color: black !important;
-    border: 1px solid black;
+    background: transparent;
+    color: var(--dd-text) !important;
+    border: 1px solid var(--dd-border);
 }
 
 .btn-outline-black:hover,
 .btn-outline-black:active,
 .btn-outline-black:focus {
-    background: black;
-    color: white !important;
+    background: rgba(255,255,255,.06);
+    color: var(--dd-text) !important;
 }
 
-/* Text & borders */
+/* Optional: new button helpers you can use in templates later */
+.btn-dd-primary {
+    background: var(--dd-accent);
+    color: #fff !important;
+    border: 1px solid rgba(124,58,237,.35);
+    border-radius: 12px;
+}
+.btn-dd-primary:hover {
+    background: rgba(124,58,237,.92);
+}
+
+.btn-dd-outline {
+    background: transparent;
+    color: var(--dd-text) !important;
+    border: 1px solid var(--dd-border);
+    border-radius: 12px;
+}
+.btn-dd-outline:hover {
+    background: rgba(255,255,255,.06);
+}
+
+/* Text & borders (legacy helpers) */
 .text-black {
-    color: #000 !important;
+    color: var(--dd-text) !important;
 }
 
 .border-black {
-    border: 1px solid black !important;
+    border: 1px solid var(--dd-border) !important;
+}
+
+/* Cards (optional helper) */
+.dd-card {
+    background: rgba(15,23,42,.72);
+    border: 1px solid var(--dd-border);
+    border-radius: 16px;
+    box-shadow: var(--dd-shadow);
 }
 
 /* Category badges */
 .badge-white {
-    background: #fff;
+    background: rgba(255,255,255,.08);
+    color: var(--dd-text);
+    border: 1px solid var(--dd-border);
 }
 
 .category-badge > span:hover {
-    background: #212529;
-    color: #fff !important;
+    background: rgba(255,255,255,.12);
+    color: var(--dd-text) !important;
 }
 
-/* Back to top button */
+/* Back to top */
 .btt-button {
     height: 42px;
     width: 42px;
@@ -108,7 +252,9 @@ body {
     cursor: pointer;
 }
 
-/* ------------------------------- Toasts */
+/* ---------------------------------------------
+   Toasts (keep working, theme colors)
+--------------------------------------------- */
 
 .message-container {
     position: fixed;
@@ -131,49 +277,48 @@ body {
     height: 0;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-bottom: 10px solid black;
+    border-bottom: 10px solid var(--dd-accent);
     position: absolute;
     top: -10px;
     right: 36px;
 }
 
 /* Arrow colours */
-.arrow-success {
-    border-bottom-color: #28a745;
-}
+.arrow-success { border-bottom-color: var(--dd-accent-2); }
+.arrow-danger  { border-bottom-color: var(--dd-danger); }
+.arrow-warning { border-bottom-color: var(--dd-warning); }
+.arrow-info    { border-bottom-color: var(--dd-info); }
 
-.arrow-danger {
-    border-bottom-color: #dc3545;
-}
-
-.arrow-warning {
-    border-bottom-color: #ffc107;
-}
-
-.arrow-info {
-    border-bottom-color: #17a2b8;
-}
-
-/* ------------------------------- Bag Notification */
-
+/* Bag Notification */
 .bag-notification-wrapper {
     max-height: 100px;
     overflow-x: hidden;
     overflow-y: auto;
 }
 
-/* -------------------------------- Media Queries */
+/* ---------------------------------------------
+   Layout helpers
+--------------------------------------------- */
 
-/* Slightly larger container on xl screens */
+.dd-header {
+    color: var(--dd-text);
+}
+
+.dd-main {
+    min-height: calc(100vh - 120px);
+}
+
+/* ---------------------------------------------
+   Media Queries
+--------------------------------------------- */
+
 @media (min-width: 1200px) {
     .container {
-        max-width: 80%;
+        max-width: 86%;
     }
 }
 
-/* Desktop header spacing */
 @media (min-width: 992px) {
-
     .fixed-top-desktop-only {
         position: fixed;
         top: 0;
@@ -183,56 +328,56 @@ body {
     }
 
     .header-container {
-        padding-top: 164px; /* desktop header height */
+        padding-top: 104px;
     }
 }
 
-/* ------------------------------- Allauth */
+/* ---------------------------------------------
+   Allauth (keep, but theme)
+--------------------------------------------- */
 
 .allauth-form-inner-content p {
     margin-top: 1rem;
-    color: #6c757d; /* Bootstrap text-secondary */
+    color: var(--dd-muted);
 }
 
 .allauth-form-inner-content input,
 .allauth-form-inner-content select,
 .allauth-form-inner-content textarea {
-    border: 1px solid #000;
-    border-radius: 0;
+    border: 1px solid var(--dd-border);
+    border-radius: 12px;
+    background: rgba(255,255,255,.04);
+    color: var(--dd-text);
 }
 
-/* Hide labels on allauth forms except remember me checkbox */
 .allauth-form-inner-content label:not([for="id_remember"]) {
     display: none;
 }
 
-/* Site-wide placeholder colour consistency (incl. search) */
 ::placeholder {
-    color: #6c757d;
+    color: rgba(229,231,235,.6);
     opacity: 1;
 }
 
-/* Allauth buttons (so we don't have to add btn classes everywhere) */
 .allauth-form-inner-content button,
 .allauth-form-inner-content input[type="submit"] {
     display: inline-block;
-    font-weight: 400;
+    font-weight: 600;
     color: #fff;
-    background-color: #000;
-    border: 1px solid #000;
-    border-radius: 0;
-    padding: 0.375rem 0.75rem;
+    background-color: var(--dd-accent);
+    border: 1px solid rgba(124,58,237,.35);
+    border-radius: 12px;
+    padding: 0.5rem 0.9rem;
 }
 
 .allauth-form-inner-content button:hover,
 .allauth-form-inner-content input[type="submit"]:hover {
-    background-color: #222;
-    border-color: #222;
+    background-color: rgba(124,58,237,.92);
 }
 
 /* Allauth links */
 .allauth-form-inner-content a {
-    color: #0dcaf0; /* Bootstrap text-info */
+    color: var(--dd-info);
 }
 
 /* --- Custom Clearable File Input (Product image widget) --- */
@@ -251,58 +396,48 @@ body {
     cursor: pointer;
 }
 
-/* Make the "Remove" checkbox match Bootstrap danger styling better */
+/* Danger checkbox */
 .custom-control-input:checked ~ .custom-control-label::before {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    border-radius: 0;
+    background-color: var(--dd-danger);
+    border-color: var(--dd-danger);
+    border-radius: 8px;
 }
 
-/* -------------------------------- Media Queries */
-/* Extra small devices (320px and down) */
+/* Extra small devices */
 @media (max-width: 320px) {
-
-    /* Main homepage callout text */
     .display-4.logo-font {
         font-size: 2rem;
     }
 
-    /* Tighten navbar items */
     .nav-link {
         padding: 0.15rem;
     }
 
-    /* Font Awesome icons inside nav */
     .fa-lg {
         font-size: 1rem;
     }
 
-    /* Navbar toggler (hamburger) */
     .navbar-toggler {
         padding: 0.2rem 0.4rem;
         font-size: 1rem;
     }
 
-    /* Delivery banner text */
     #delivery-banner h4 {
         font-size: 0.9rem;
     }
 
-    /* Product detail buttons: target chain of classes */
     .btn.btn-outline-black.rounded-0,
     .btn.btn-black.rounded-0 {
         padding: 0.375rem 0.375rem;
         font-size: 0.75rem;
     }
 
-    /* Bag page: prevent .btn-lg from being huge on mobile */
     .btn.btn-black.rounded-0.btn-lg,
     .btn.btn-outline-black.rounded-0.btn-lg {
         padding: 0.375rem 0.375rem;
         font-size: 0.75rem;
     }
 
-    /* Bag qty controls: ignore the general button shrink */
     .increment-qty,
     .decrement-qty {
         padding: 0.25rem 0.5rem !important;

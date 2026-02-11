@@ -1,19 +1,17 @@
 {% load static %}
 
 <!doctype html>
-
 <html lang="en">
 <head>
-    {% block meta %}
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    {% endblock %}
+  {% block meta %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  {% endblock %}
 
-```
-{% block extrameta %}{% endblock %}
+  {% block extrameta %}{% endblock %}
 
-{% block corecss %}
+  {% block corecss %}
     <link rel="stylesheet"
           href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
           crossorigin="anonymous">
@@ -21,180 +19,169 @@
           href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
           crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
-{% endblock %}
+  {% endblock %}
 
-<link rel="icon" href="{% static 'favicon.ico' %}">
+  <link rel="icon" href="{% static 'favicon.ico' %}">
+  {% block extracss %}{% endblock %}
 
-{% block extracss %}{% endblock %}
-
-<title>Boutique Ado{% block extratitle %}{% endblock %}</title>
-```
-
+  <title>Design-Dock{% block extratitle %}{% endblock %}</title>
 </head>
 
-<body>
+<body class="dd-body">
 
-<!-- NAVBAR -->
-
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg dd-nav border-bottom">
     <div class="container">
 
-```
-    <!-- Logo -->
-    <a class="navbar-brand logo-font" href="{% url 'home' %}">Boutique Ado</a>
+      <!-- Brand -->
+      <a class="navbar-brand dd-brand" href="{% url 'home' %}">
+        <span class="dd-mark">
+          <i class="fas fa-drafting-compass"></i>
+        </span>
+        <span class="dd-wordmark">Design-Dock</span>
+      </a>
 
-    <!-- Mobile toggle -->
-    <button class="navbar-toggler" type="button"
-            data-toggle="collapse"
-            data-target="#main-nav"
-            aria-controls="main-nav"
-            aria-expanded="false"
-            aria-label="Toggle navigation">
+      <!-- Mobile toggle -->
+      <button class="navbar-toggler dd-toggler" type="button"
+              data-toggle="collapse"
+              data-target="#main-nav"
+              aria-controls="main-nav"
+              aria-expanded="false"
+              aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
-    </button>
+      </button>
 
-    <!-- Navigation -->
-    <div class="collapse navbar-collapse" id="main-nav">
+      <div class="collapse navbar-collapse" id="main-nav">
 
-        <!-- Left side -->
-        <ul class="navbar-nav mr-auto">
+        <!-- Left -->
+        <ul class="navbar-nav mr-auto dd-navlinks">
 
-            <!-- Mobile-only Home link (logo may be hidden in some layouts) -->
-            <li class="nav-item d-lg-none">
-                <a class="nav-link" href="{% url 'home' %}">Home</a>
-            </li>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
+          </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'products' %}">Products</a>
-            </li>
-
-        </ul>
-
-        <!-- Right side -->
-        <ul class="navbar-nav ml-auto align-items-lg-center">
-
-            <!-- Account Dropdown -->
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle"
-                   href="#"
-                   id="user-options"
-                   role="button"
-                   data-toggle="dropdown"
-                   aria-haspopup="true"
-                   aria-expanded="false">
-                    <i class="fas fa-user fa-lg"></i>
-                    <span class="d-none d-lg-inline">Account</span>
-                </a>
-
-                <div class="dropdown-menu dropdown-menu-right border-0"
-                     aria-labelledby="user-options">
-
-                    {% if request.user.is_authenticated %}
-
-                        {% if request.user.is_superuser %}
-                            <a href="{% url 'add_product' %}" class="dropdown-item">
-                                Product Management
-                            </a>
-                        {% endif %}
-
-                        <a href="{% url 'profile' %}" class="dropdown-item">
-                            My Profile
-                        </a>
-
-                        <a href="{% url 'account_logout' %}" class="dropdown-item">
-                            Logout
-                        </a>
-
-                    {% else %}
-
-                        <a href="{% url 'account_signup' %}" class="dropdown-item">
-                            Register
-                        </a>
-
-                        <a href="{% url 'account_login' %}" class="dropdown-item">
-                            Login
-                        </a>
-
-                    {% endif %}
-                </div>
-            </li>
-
-            <!-- Shopping Bag -->
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'view_bag' %}">
-                    <i class="fas fa-shopping-bag fa-lg"></i>
-                    <span class="ml-1">
-                        {% if grand_total %}
-                            £{{ grand_total|floatformat:2 }}
-                        {% else %}
-                            £0.00
-                        {% endif %}
-                    </span>
-                </a>
-            </li>
+          <!-- Rebrand "Products" as something more design/tooling oriented -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'products' %}">
+              <span class="dd-navicon"><i class="fas fa-layer-group"></i></span>
+              Templates
+            </a>
+          </li>
 
         </ul>
 
+        <!-- Right -->
+        <ul class="navbar-nav ml-auto align-items-lg-center dd-actions">
+
+          <!-- Account -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle dd-actionlink"
+               href="#"
+               id="user-options"
+               role="button"
+               data-toggle="dropdown"
+               aria-haspopup="true"
+               aria-expanded="false">
+              <i class="fas fa-user-circle fa-lg"></i>
+              <span class="d-none d-lg-inline ml-1">Account</span>
+            </a>
+
+            <div class="dropdown-menu dropdown-menu-right dd-dropdown"
+                 aria-labelledby="user-options">
+
+              {% if request.user.is_authenticated %}
+
+                {% if request.user.is_superuser %}
+                  <a href="{% url 'add_product' %}" class="dropdown-item">
+                    <i class="fas fa-tools mr-2"></i>Product Management
+                  </a>
+                  <div class="dropdown-divider"></div>
+                {% endif %}
+
+                <a href="{% url 'profile' %}" class="dropdown-item">
+                  <i class="fas fa-id-badge mr-2"></i>My Profile
+                </a>
+
+                <a href="{% url 'account_logout' %}" class="dropdown-item">
+                  <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </a>
+
+              {% else %}
+
+                <a href="{% url 'account_signup' %}" class="dropdown-item">
+                  <i class="fas fa-user-plus mr-2"></i>Register
+                </a>
+
+                <a href="{% url 'account_login' %}" class="dropdown-item">
+                  <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </a>
+
+              {% endif %}
+            </div>
+          </li>
+
+          <!-- Bag -->
+          <li class="nav-item">
+            <a class="nav-link dd-actionlink" href="{% url 'view_bag' %}">
+              <i class="fas fa-shopping-bag fa-lg"></i>
+              <span class="ml-2 dd-total">
+                {% if grand_total %}
+                  £{{ grand_total|floatformat:2 }}
+                {% else %}
+                  £0.00
+                {% endif %}
+              </span>
+            </a>
+          </li>
+
+        </ul>
+
+      </div>
     </div>
-</div>
-```
+  </nav>
 
-</nav>
-
-<!-- PAGE HEADER -->
-
-<header class="container header-container">
+  <!-- PAGE HEADER -->
+  <header class="container header-container dd-header">
     {% block page_header %}{% endblock %}
-</header>
+  </header>
 
-<!-- MAIN CONTENT -->
-
-<main>
+  <!-- MAIN -->
+  <main class="dd-main">
     {% block content %}{% endblock %}
-</main>
+  </main>
 
-<!-- TOAST MESSAGES -->
-
-{% if messages %}
-
-<div class="message-container">
-    {% for message in messages %}
+  <!-- TOASTS -->
+  {% if messages %}
+    <div class="message-container">
+      {% for message in messages %}
         {% with message.level as level %}
-            {% if level == 40 %}
-                {% include "includes/toasts/toast_error.html" %}
-            {% elif level == 30 %}
-                {% include "includes/toasts/toast_warning.html" %}
-            {% elif level == 25 %}
-                {% include "includes/toasts/toast_success.html" %}
-            {% else %}
-                {% include "includes/toasts/toast_info.html" %}
-            {% endif %}
+          {% if level == 40 %}
+            {% include "includes/toasts/toast_error.html" %}
+          {% elif level == 30 %}
+            {% include "includes/toasts/toast_warning.html" %}
+          {% elif level == 25 %}
+            {% include "includes/toasts/toast_success.html" %}
+          {% else %}
+            {% include "includes/toasts/toast_info.html" %}
+          {% endif %}
         {% endwith %}
-    {% endfor %}
-</div>
-{% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
 
-<!-- CORE JS -->
+  <!-- CORE JS -->
+  {% block corejs %}
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
+  {% endblock %}
 
-{% block corejs %}
-
-<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
-
-{% endblock %}
-
-<!-- POSTLOAD JS -->
-
-{% block postloadjs %}
-
-<script>
-    $('.toast').toast('show');
-</script>
-
-{% endblock %}
+  <!-- POSTLOAD JS -->
+  {% block postloadjs %}
+    <script>
+      $('.toast').toast('show');
+    </script>
+  {% endblock %}
 
 </body>
 </html>
