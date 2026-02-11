@@ -106,7 +106,6 @@ class StripeWH_Handler:
         address = shipping.get("address") or {}
 
         grand_total = Decimal(intent.get("amount", 0)) / Decimal("100")
-
         email = intent.get("receipt_email") or billing_details.get("email") or ""
 
         # Normalise empty strings
@@ -190,24 +189,18 @@ class StripeWH_Handler:
                 grand_total=grand_total,
             )
 
+            # NEW: bag uses items_by_license
             for item_id, item_data in bag.items():
                 product = Product.objects.get(id=int(item_id))
 
-                if isinstance(item_data, int):
+                items_by_license = (item_data or {}).get("items_by_license", {})
+                for license_type, quantity in items_by_license.items():
                     OrderLineItem.objects.create(
                         order=order,
                         product=product,
-                        quantity=item_data,
+                        quantity=quantity,
+                        license_type=license_type,
                     )
-                else:
-                    items_by_size = item_data.get("items_by_size", {})
-                    for size, quantity in items_by_size.items():
-                        OrderLineItem.objects.create(
-                            order=order,
-                            product=product,
-                            quantity=quantity,
-                            product_size=size,
-                        )
 
         except Exception as e:
             if order:

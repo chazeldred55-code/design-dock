@@ -52,6 +52,11 @@ def checkout(request):
       - Render checkout page + create PaymentIntent
     POST:
       - Create Order + line items, then redirect to checkout_success (order_number)
+
+    Design store updates:
+      - Bag uses items_by_license
+      - OrderLineItem stores license_type (not product_size)
+      - Digital store: delivery should already be 0 in bag_contents + Order.update_total
     """
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -92,28 +97,18 @@ def checkout(request):
             order.original_bag = json.dumps(bag)
             order.save()
 
+            # NEW: Create line items from items_by_license
             for item_id, item_data in bag.items():
-                try:
-                    product = Product.objects.get(id=item_id)
-                except Product.DoesNotExist:
-                    messages.error(request, "One of the products in your bag wasn't found.")
-                    order.delete()
-                    return redirect(reverse("view_bag"))
+                product = get_object_or_404(Product, pk=item_id)
 
-                if isinstance(item_data, int):
+                items_by_license = item_data.get("items_by_license", {})
+                for license_type, quantity in items_by_license.items():
                     OrderLineItem.objects.create(
                         order=order,
                         product=product,
-                        quantity=item_data,
+                        quantity=quantity,
+                        license_type=license_type,
                     )
-                else:
-                    for size, quantity in item_data.get("items_by_size", {}).items():
-                        OrderLineItem.objects.create(
-                            order=order,
-                            product=product,
-                            quantity=quantity,
-                            product_size=size,
-                        )
 
             save_info = request.POST.get("save_info")
             request.session["save_info"] = True if save_info else False

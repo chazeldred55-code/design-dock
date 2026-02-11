@@ -82,8 +82,10 @@
                 </div>
 
                 <div class="mt-2" style="color: var(--dd-muted); font-size: .92rem;">
-                  {% if item.size %}
-                    <span class="badge badge-white px-2 py-1 mr-1">Size: {{ item.size|upper }}</span>
+                  {% if item.license_type %}
+                    <span class="badge badge-white px-2 py-1 mr-1">
+                      License: {{ item.license_type|title }}
+                    </span>
                   {% endif %}
 
                   {% if item.product.category %}
@@ -216,17 +218,16 @@
       $(this).closest("div").find("form.update-form").submit();
     });
 
-    // Remove item (POST to /bag/remove/<itemId>/ with product_size)
+    // Remove item (POST to /bag/remove/<itemId>/ with license_type) using Django URL from data-url
     $(".remove-item").click(function (e) {
       e.preventDefault();
       const csrfToken = "{{ csrf_token }}";
-      const itemId = $(this).attr("id").split("remove_")[1];
-      const size = $(this).data("product_size");
+      const url = $(this).data("url");
+      const licenseType = $(this).data("license_type");
 
-      const url = `/bag/remove/${itemId}/`;
       const data = {
         csrfmiddlewaretoken: csrfToken,
-        product_size: size
+        license_type: licenseType
       };
 
       $.post(url, data).done(function () {

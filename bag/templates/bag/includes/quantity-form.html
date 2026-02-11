@@ -6,6 +6,13 @@
           action="{% url 'adjust_bag' item.item_id %}">
         {% csrf_token %}
 
+        <!-- License type (design store) -->
+        {% if item.license_type %}
+            <input type="hidden" name="license_type" value="{{ item.license_type }}">
+        {% else %}
+            <input type="hidden" name="license_type" value="personal">
+        {% endif %}
+
         <!-- Quantity label -->
         <label for="id_qty_{{ item.item_id }}" class="small text-muted">
             Quantity
@@ -49,11 +56,6 @@
             </div>
         </div>
 
-        <!-- Size (if product has sizes) -->
-        {% if item.size %}
-            <input type="hidden" name="product_size" value="{{ item.size }}">
-        {% endif %}
-
         <!-- Update / Remove links -->
         <div class="mt-2">
             <a class="update-link text-info small">
@@ -62,9 +64,7 @@
             <a class="remove-item text-danger small"
                id="remove_{{ item.item_id }}"
                data-url="{% url 'remove_from_bag' item.item_id %}"
-               {% if item.size %}
-                   data-product_size="{{ item.size }}"
-               {% endif %}>
+               data-license_type="{{ item.license_type|default:'personal' }}">
                 Remove
             </a>
         </div>

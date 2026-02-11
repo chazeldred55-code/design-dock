@@ -10,101 +10,68 @@ def view_bag(request):
 
 
 def add_to_bag(request, item_id):
-    """Add a quantity of the specified product to the shopping bag."""
+    """Add a quantity of the specified product + license type to the shopping bag."""
     product = get_object_or_404(Product, pk=item_id)
-    quantity = int(request.POST.get("quantity"))
-    redirect_url = request.POST.get("redirect_url")
+    quantity = int(request.POST.get("quantity", 1))
+    redirect_url = request.POST.get("redirect_url", reverse("products"))
 
-    size = None
-    if "product_size" in request.POST:
-        size = request.POST["product_size"]
+    # For Design Dock: license type replaces "size"
+    license_type = request.POST.get("license_type", "personal")
 
     bag = request.session.get("bag", {})
 
-    # Products WITH sizes
-    if size:
-        if item_id in bag:
-            if size in bag[item_id]["items_by_size"]:
-                bag[item_id]["items_by_size"][size] += quantity
-                messages.success(
-                    request,
-                    f"Updated {product.name} size {size.upper()} quantity to "
-                    f"{bag[item_id]['items_by_size'][size]}."
-                )
-            else:
-                bag[item_id]["items_by_size"][size] = quantity
-                messages.success(
-                    request,
-                    f"Added {product.name} size {size.upper()} to your bag."
-                )
-        else:
-            bag[item_id] = {"items_by_size": {size: quantity}}
+    if item_id in bag:
+        if license_type in bag[item_id]["items_by_license"]:
+            bag[item_id]["items_by_license"][license_type] += quantity
             messages.success(
                 request,
-                f"Added {product.name} size {size.upper()} to your bag."
+                f"Updated {product.name} ({license_type.title()} license) quantity to "
+                f"{bag[item_id]['items_by_license'][license_type]}."
             )
-
-    # Products WITHOUT sizes
+        else:
+            bag[item_id]["items_by_license"][license_type] = quantity
+            messages.success(
+                request,
+                f"Added {product.name} ({license_type.title()} license) to your bag."
+            )
     else:
-        if item_id in bag:
-            bag[item_id] += quantity
-            messages.success(
-                request,
-                f"Updated {product.name} quantity to {bag[item_id]}."
-            )
-        else:
-            bag[item_id] = quantity
-            messages.success(
-                request,
-                f"Added {product.name} to your bag."
-            )
+        bag[item_id] = {"items_by_license": {license_type: quantity}}
+        messages.success(
+            request,
+            f"Added {product.name} ({license_type.title()} license) to your bag."
+        )
 
     request.session["bag"] = bag
     return redirect(redirect_url)
 
 
 def adjust_bag(request, item_id):
-    """Adjust the quantity of the specified product to the specified amount."""
+    """Adjust the quantity of the specified product/license to the specified amount."""
     product = get_object_or_404(Product, pk=item_id)
-    quantity = int(request.POST.get("quantity"))
-
-    size = None
-    if "product_size" in request.POST:
-        size = request.POST["product_size"]
+    quantity = int(request.POST.get("quantity", 1))
+    license_type = request.POST.get("license_type", "personal")
 
     bag = request.session.get("bag", {})
 
-    # Products WITH sizes
-    if size:
-        if quantity > 0:
-            bag[item_id]["items_by_size"][size] = quantity
-            messages.success(
-                request,
-                f"Updated {product.name} size {size.upper()} quantity to {quantity}."
-            )
-        else:
-            bag[item_id]["items_by_size"].pop(size, None)
-            messages.success(
-                request,
-                f"Removed {product.name} size {size.upper()} from your bag."
-            )
-            if not bag[item_id]["items_by_size"]:
-                bag.pop(item_id, None)
+    if item_id not in bag or "items_by_license" not in bag[item_id]:
+        messages.error(request, "That item isn't in your bag.")
+        return redirect(reverse("view_bag"))
 
-    # Products WITHOUT sizes
+    if quantity > 0:
+        bag[item_id]["items_by_license"][license_type] = quantity
+        messages.success(
+            request,
+            f"Updated {product.name} ({license_type.title()} license) quantity to {quantity}."
+        )
     else:
-        if quantity > 0:
-            bag[item_id] = quantity
-            messages.success(
-                request,
-                f"Updated {product.name} quantity to {quantity}."
-            )
-        else:
+        bag[item_id]["items_by_license"].pop(license_type, None)
+        messages.success(
+            request,
+            f"Removed {product.name} ({license_type.title()} license) from your bag."
+        )
+
+        if not bag[item_id]["items_by_license"]:
             bag.pop(item_id, None)
-            messages.success(
-                request,
-                f"Removed {product.name} from your bag."
-            )
 
     request.session["bag"] = bag
     return redirect(reverse("view_bag"))
@@ -112,29 +79,23 @@ def adjust_bag(request, item_id):
 
 def remove_from_bag(request, item_id):
     """
-    Remove an item from the bag.
-    If the item has sizes, remove only the specified size (POST: product_size).
-    Otherwise remove the entire item.
+    Remove an item/license from the bag.
     Designed to be called via AJAX and return HTTP 200 on success.
     """
     product = get_object_or_404(Product, pk=item_id)
     bag = request.session.get("bag", {})
-    size = request.POST.get("product_size")
+    license_type = request.POST.get("license_type", "personal")
 
     try:
-        if size:
-            bag[item_id]["items_by_size"].pop(size, None)
-            if not bag[item_id]["items_by_size"]:
+        if item_id in bag and "items_by_license" in bag[item_id]:
+            bag[item_id]["items_by_license"].pop(license_type, None)
+
+            if not bag[item_id]["items_by_license"]:
                 bag.pop(item_id, None)
+
             messages.success(
                 request,
-                f"Removed {product.name} size {size.upper()} from your bag."
-            )
-        else:
-            bag.pop(item_id, None)
-            messages.success(
-                request,
-                f"Removed {product.name} from your bag."
+                f"Removed {product.name} ({license_type.title()} license) from your bag."
             )
 
         request.session["bag"] = bag
