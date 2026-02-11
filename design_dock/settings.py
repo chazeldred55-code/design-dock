@@ -1,6 +1,6 @@
 """
-Django settings for boutique_ado project.
-Clean, CI-aligned, Heroku-ready settings.py
+Django settings for Design Dock project.
+Production-ready, Stripe-integrated configuration.
 """
 
 from pathlib import Path
@@ -21,9 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --------------------------------------------------
 # ENVIRONMENT
 # --------------------------------------------------
-if os.path.isfile("env.py"):
-    import env  # noqa: F401
-
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -32,13 +29,13 @@ load_dotenv(BASE_DIR / ".env")
 # --------------------------------------------------
 SECRET_KEY = os.environ.get("SECRET_KEY", get_random_secret_key())
 
-DEBUG = "DEVELOPMENT" in os.environ
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
     h.strip()
     for h in os.environ.get(
         "ALLOWED_HOSTS",
-        "localhost,127.0.0.1,adoboutique1.herokuapp.com,adoboutique1-2bab1d876acb.herokuapp.com",
+        "localhost,127.0.0.1",
     ).split(",")
     if h.strip()
 ]
@@ -68,7 +65,7 @@ INSTALLED_APPS = [
     # Project apps
     "products",
     "bag",
-    "checkout.apps.CheckoutConfig",
+    "checkout",
     "home",
     "profiles",
 ]
@@ -117,8 +114,8 @@ MIDDLEWARE = [
 # --------------------------------------------------
 # URLS / WSGI
 # --------------------------------------------------
-ROOT_URLCONF = "boutique_ado.urls"
-WSGI_APPLICATION = "boutique_ado.wsgi.application"
+ROOT_URLCONF = "design_dock.urls"
+WSGI_APPLICATION = "design_dock.wsgi.application"
 
 
 # --------------------------------------------------
@@ -148,9 +145,19 @@ TEMPLATES = [
 # --------------------------------------------------
 # DATABASE
 # --------------------------------------------------
-DATABASES = {
-    "default": dj_database_url.parse(os.environ.get("DATABASE_URL", ""))
-}
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(DATABASE_URL)
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # --------------------------------------------------
@@ -174,7 +181,7 @@ USE_TZ = True
 
 
 # --------------------------------------------------
-# STATIC FILES (LOCAL DEFAULT)
+# STATIC FILES
 # --------------------------------------------------
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -182,14 +189,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # --------------------------------------------------
-# MEDIA FILES (LOCAL DEFAULT)
+# MEDIA FILES
 # --------------------------------------------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
 # --------------------------------------------------
-# AWS / S3 (PRODUCTION)
+# AWS / S3 (Production Only)
 # --------------------------------------------------
 if "USE_AWS" in os.environ:
     AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
@@ -200,12 +207,10 @@ if "USE_AWS" in os.environ:
 
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
-    # Static files
     STATICFILES_STORAGE = "custom_storages.StaticStorage"
     STATICFILES_LOCATION = "static"
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
 
-    # Media files
     DEFAULT_FILE_STORAGE = "custom_storages.MediaStorage"
     MEDIAFILES_LOCATION = "media"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
@@ -220,17 +225,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --------------------------------------------------
 # MESSAGES
 # --------------------------------------------------
-from django.contrib.messages import constants as messages  # noqa: E402
+from django.contrib.messages import constants as messages  # noqa
 
-MESSAGE_TAGS = {
-    messages.ERROR: "danger",
-}
-
+MESSAGE_TAGS = {messages.ERROR: "danger"}
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 
 # --------------------------------------------------
-# BAG / DELIVERY
+# BAG SETTINGS
 # --------------------------------------------------
 FREE_DELIVERY_THRESHOLD = Decimal(os.environ.get("FREE_DELIVERY_THRESHOLD", "50"))
 STANDARD_DELIVERY_PERCENTAGE = Decimal(os.environ.get("STANDARD_DELIVERY_PERCENTAGE", "10"))
@@ -239,21 +241,24 @@ STANDARD_DELIVERY_PERCENTAGE = Decimal(os.environ.get("STANDARD_DELIVERY_PERCENT
 # --------------------------------------------------
 # STRIPE
 # --------------------------------------------------
-STRIPE_CURRENCY = "gbp"
+STRIPE_CURRENCY = os.getenv("STRIPE_CURRENCY", "gbp")
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY", "")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
-STRIPE_WH_SECRET = os.getenv("STRIPE_WH_SECRET", "")
+
+# Canonical webhook secret
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+# Backwards compatibility (so existing code using STRIPE_WH_SECRET still works)
+STRIPE_WH_SECRET = STRIPE_WEBHOOK_SECRET
 
 
 # --------------------------------------------------
 # EMAIL
 # --------------------------------------------------
-if "DEVELOPMENT" in os.environ:
-    # Development: print emails to terminal
+if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-    DEFAULT_FROM_EMAIL = "boutiqueado@example.com"
+    DEFAULT_FROM_EMAIL = "designdock@example.com"
 else:
-    # Production: Gmail SMTP
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_USE_TLS = True
     EMAIL_PORT = 587

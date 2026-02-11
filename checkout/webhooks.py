@@ -11,16 +11,19 @@ from .webhook_handler import StripeWH_Handler
 def webhook(request):
     """
     Receive Stripe webhooks and route them to the correct handler.
+    Enforces signature verification (no silent bypass).
     """
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
-    payload = request.body
+    payload = request.body  # raw bytes (required for signature verification)
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
-    wh_secret = getattr(settings, "STRIPE_WH_SECRET", "")
 
-    # Allow wiring/testing if secret not yet set
+    # Use the canonical setting (mapped in settings.py for backwards compatibility)
+    wh_secret = getattr(settings, "STRIPE_WEBHOOK_SECRET", "") or getattr(settings, "STRIPE_WH_SECRET", "")
+
     if not wh_secret:
-        return HttpResponse(status=200)
+        # Fail loudly so you don't accidentally accept unverified webhooks
+        return HttpResponse("STRIPE_WEBHOOK_SECRET is not set", status=500)
 
     try:
         event = stripe.Webhook.construct_event(
@@ -29,10 +32,8 @@ def webhook(request):
             secret=wh_secret,
         )
     except ValueError:
-        # Invalid payload
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError:
-        # Invalid signature
         return HttpResponse(status=400)
     except Exception as e:
         return HttpResponse(content=str(e), status=400)
@@ -42,6 +43,8 @@ def webhook(request):
     event_map = {
         "payment_intent.succeeded": handler.handle_payment_intent_succeeded,
         "payment_intent.payment_failed": handler.handle_payment_intent_payment_failed,
+        # Add this if you intend to test with: stripe trigger checkout.session.completed
+        "checkout.session.completed": getattr(handler, "handle_checkout_session_completed", handler.handle_event),
     }
 
     event_type = event["type"]
