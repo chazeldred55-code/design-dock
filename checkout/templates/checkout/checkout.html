@@ -2,7 +2,6 @@
 {% extends "base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
-{% load bag_tools %}
 
 {% block extracss %}
 <link rel="stylesheet" href="{% static 'checkout/css/checkout.css' %}">
@@ -230,7 +229,6 @@
 {% block postloadjs %}
 {{ block.super }}
 
-{# Stripe keys available to JS safely #}
 {{ stripe_public_key|default:""|json_script:"id_stripe_public_key" }}
 {{ client_secret|default:""|json_script:"id_client_secret" }}
 

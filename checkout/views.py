@@ -1,19 +1,20 @@
 import json
-import stripe
+from decimal import Decimal
 
+import stripe
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse
-from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.views.decorators.http import require_POST
 
 from bag.context_processors import bag_contents
+from products.models import Product
+from profiles.forms import UserProfileForm
+from profiles.models import UserProfile
+
 from .forms import OrderForm
 from .models import Order, OrderLineItem
-from products.models import Product
-
-from profiles.models import UserProfile
-from profiles.forms import UserProfileForm
 
 
 @require_POST
@@ -24,8 +25,10 @@ def cache_checkout_data(request):
     """
     try:
         client_secret = request.POST.get("client_secret", "")
-        pid = client_secret.split("_secret")[0]
+        if "_secret" not in client_secret:
+            return HttpResponse(content="Missing client_secret", status=400)
 
+        pid = client_secret.split("_secret")[0]
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
         stripe.PaymentIntent.modify(
@@ -55,8 +58,8 @@ def checkout(request):
 
     Design store updates:
       - Bag uses items_by_license
-      - OrderLineItem stores license_type (not product_size)
-      - Digital store: delivery should already be 0 in bag_contents + Order.update_total
+      - OrderLineItem stores license_type
+      - Digital store: delivery is 0
     """
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -66,8 +69,8 @@ def checkout(request):
         return redirect(reverse("products"))
 
     current_bag = bag_contents(request)
-    grand_total = current_bag["grand_total"]
-    stripe_total = round(grand_total * 100)
+    grand_total = Decimal(str(current_bag["grand_total"]))
+    stripe_total = int((grand_total * 100).quantize(Decimal("1")))
 
     if request.method == "POST":
         form_data = {
@@ -97,17 +100,17 @@ def checkout(request):
             order.original_bag = json.dumps(bag)
             order.save()
 
-            # NEW: Create line items from items_by_license
+            # Create line items from items_by_license
             for item_id, item_data in bag.items():
                 product = get_object_or_404(Product, pk=item_id)
 
-                items_by_license = item_data.get("items_by_license", {})
+                items_by_license = (item_data or {}).get("items_by_license", {})
                 for license_type, quantity in items_by_license.items():
                     OrderLineItem.objects.create(
                         order=order,
                         product=product,
-                        quantity=quantity,
-                        license_type=license_type,
+                        quantity=int(quantity),
+                        license_type=(license_type or "personal").lower(),
                     )
 
             save_info = request.POST.get("save_info")
@@ -165,8 +168,9 @@ def checkout_success(request, order_number):
 
     if request.user.is_authenticated:
         profile = get_object_or_404(UserProfile, user=request.user)
-        order.user_profile = profile
-        order.save()
+        if not order.user_profile:
+            order.user_profile = profile
+            order.save(update_fields=["user_profile"])
 
         if save_info:
             profile_data = {
@@ -183,8 +187,7 @@ def checkout_success(request, order_number):
             if user_profile_form.is_valid():
                 user_profile_form.save()
 
-    if "bag" in request.session:
-        del request.session["bag"]
+    request.session.pop("bag", None)
 
     messages.success(
         request,

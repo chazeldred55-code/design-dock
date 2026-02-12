@@ -20,9 +20,6 @@ class StripeWH_Handler:
     def __init__(self, request):
         self.request = request
 
-    # --------------------------------------------------
-    # Email
-    # --------------------------------------------------
     def _send_confirmation_email(self, order):
         """Send confirmation email safely (no webhook crash if email fails)."""
         try:
@@ -46,12 +43,8 @@ class StripeWH_Handler:
                 [order.email],
             )
         except Exception:
-            # Don't fail webhook if email sending fails
             pass
 
-    # --------------------------------------------------
-    # Fallback handler
-    # --------------------------------------------------
     def handle_event(self, event):
         """Handle unknown/unexpected webhook events."""
         return HttpResponse(
@@ -59,19 +52,15 @@ class StripeWH_Handler:
             status=200,
         )
 
-    # --------------------------------------------------
-    # PAYMENT SUCCESS
-    # --------------------------------------------------
     def handle_payment_intent_succeeded(self, event):
         intent = event["data"]["object"]
         pid = intent.get("id", "")
 
         metadata = intent.get("metadata") or {}
         bag_str = metadata.get("bag", "")
-        save_info = metadata.get("save_info", "")
+        save_info = (metadata.get("save_info") or "").lower()
         username = metadata.get("username", "")
 
-        # If metadata not present (Stripe CLI test events), exit cleanly
         if not bag_str:
             return HttpResponse(
                 content="payment_intent.succeeded received (no bag metadata).",
@@ -90,14 +79,14 @@ class StripeWH_Handler:
         # Profile (optional)
         # -------------------------
         profile = None
-        if username and username != "AnonymousUser":
+        if username and username not in ("anonymous", "AnonymousUser"):
             try:
                 profile = UserProfile.objects.get(user__username=username)
             except UserProfile.DoesNotExist:
                 profile = None
 
         # -------------------------
-        # Billing & Shipping
+        # Billing (shipping may be missing for digital)
         # -------------------------
         charges = (intent.get("charges") or {}).get("data", [])
         billing_details = (charges[0].get("billing_details") if charges else {}) or {}
@@ -105,8 +94,12 @@ class StripeWH_Handler:
         shipping = intent.get("shipping") or {}
         address = shipping.get("address") or {}
 
-        grand_total = Decimal(intent.get("amount", 0)) / Decimal("100")
+        # Prefer receipt_email, then billing email, then metadata username
         email = intent.get("receipt_email") or billing_details.get("email") or ""
+        full_name = shipping.get("name") or billing_details.get("name") or ""
+
+        # Amount comes in cents/pence
+        grand_total = Decimal(intent.get("amount", 0)) / Decimal("100")
 
         # Normalise empty strings
         for k in ("line1", "line2", "city", "state", "postal_code", "country"):
@@ -116,7 +109,7 @@ class StripeWH_Handler:
             shipping["phone"] = None
 
         # -------------------------
-        # Update profile defaults
+        # Update profile defaults (optional)
         # -------------------------
         if profile and save_info == "true":
             profile.default_phone_number = shipping.get("phone")
@@ -137,7 +130,7 @@ class StripeWH_Handler:
         while attempt <= 5:
             try:
                 order = Order.objects.get(
-                    full_name__iexact=(shipping.get("name") or ""),
+                    full_name__iexact=full_name,
                     email__iexact=email,
                     grand_total=grand_total,
                     original_bag=bag_str,
@@ -148,9 +141,6 @@ class StripeWH_Handler:
                 attempt += 1
                 time.sleep(1)
 
-        # -------------------------
-        # If order exists
-        # -------------------------
         if order:
             if profile and not order.user_profile:
                 order.user_profile = profile
@@ -175,7 +165,7 @@ class StripeWH_Handler:
         try:
             order = Order.objects.create(
                 user_profile=profile,
-                full_name=shipping.get("name") or "",
+                full_name=full_name,
                 email=email,
                 phone_number=shipping.get("phone") or "",
                 country=address.get("country") or "",
@@ -189,8 +179,8 @@ class StripeWH_Handler:
                 grand_total=grand_total,
             )
 
-            # NEW: bag uses items_by_license
-            for item_id, item_data in bag.items():
+            # bag uses items_by_license
+            for item_id, item_data in (bag or {}).items():
                 product = Product.objects.get(id=int(item_id))
 
                 items_by_license = (item_data or {}).get("items_by_license", {})
@@ -198,8 +188,8 @@ class StripeWH_Handler:
                     OrderLineItem.objects.create(
                         order=order,
                         product=product,
-                        quantity=quantity,
-                        license_type=license_type,
+                        quantity=int(quantity),
+                        license_type=(license_type or "personal").lower(),
                     )
 
         except Exception as e:
@@ -210,16 +200,20 @@ class StripeWH_Handler:
                 status=500,
             )
 
-        self._send_confirmation_email(order)
+        # Send confirmation once
+        if hasattr(order, "email_sent"):
+            if not order.email_sent:
+                self._send_confirmation_email(order)
+                order.email_sent = True
+                order.save(update_fields=["email_sent"])
+        else:
+            self._send_confirmation_email(order)
 
         return HttpResponse(
             content=f"Webhook verified: created order {order.order_number}",
             status=200,
         )
 
-    # --------------------------------------------------
-    # PAYMENT FAILED
-    # --------------------------------------------------
     def handle_payment_intent_payment_failed(self, event):
         intent = event["data"]["object"]
         pid = intent.get("id", "")
