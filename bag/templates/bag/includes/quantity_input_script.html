@@ -1,0 +1,69 @@
+{# products/templates/products/includes/quantity_input_script.html #}
+<script>
+  /*
+    Quantity controls for product detail page
+    Works with:
+      id="id_qty_{{ product.id }}"
+      id="increment-qty_{{ product.id }}"
+      id="decrement-qty_{{ product.id }}"
+      class="qty_input"
+  */
+
+  function handleEnableDisable(itemId) {
+    const $qtyInput = $(`#id_qty_${itemId}`);
+    if (!$qtyInput.length) return;
+
+    const currentValue = parseInt($qtyInput.val(), 10);
+    const disableMinus = isNaN(currentValue) || currentValue <= 1;
+    const disablePlus = !isNaN(currentValue) && currentValue >= 99;
+
+    $(`#decrement-qty_${itemId}`).prop("disabled", disableMinus);
+    $(`#increment-qty_${itemId}`).prop("disabled", disablePlus);
+  }
+
+  // Initialize on page load
+  $(".qty_input").each(function () {
+    const itemId = $(this).data("item_id");
+    handleEnableDisable(itemId);
+  });
+
+  // Manual typing
+  $(".qty_input").on("change", function () {
+    const itemId = $(this).data("item_id");
+    handleEnableDisable(itemId);
+  });
+
+  // Increment
+  $(".increment-qty").on("click", function (e) {
+    e.preventDefault();
+
+    const itemId = $(this).data("item_id");
+    const $qtyInput = $(`#id_qty_${itemId}`);
+
+    let currentValue = parseInt($qtyInput.val(), 10);
+    if (isNaN(currentValue) || currentValue < 1) currentValue = 1;
+
+    if (currentValue < 99) {
+      $qtyInput.val(currentValue + 1);
+    }
+
+    handleEnableDisable(itemId);
+  });
+
+  // Decrement
+  $(".decrement-qty").on("click", function (e) {
+    e.preventDefault();
+
+    const itemId = $(this).data("item_id");
+    const $qtyInput = $(`#id_qty_${itemId}`);
+
+    let currentValue = parseInt($qtyInput.val(), 10);
+    if (isNaN(currentValue) || currentValue < 1) currentValue = 1;
+
+    if (currentValue > 1) {
+      $qtyInput.val(currentValue - 1);
+    }
+
+    handleEnableDisable(itemId);
+  });
+</script>
