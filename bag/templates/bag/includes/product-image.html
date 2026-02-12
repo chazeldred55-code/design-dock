@@ -1,15 +1,14 @@
+{# bag/templates/bag/includes/product-image.html #}
 {% load static %}
 
 <div class="col-12 col-sm-3">
     {% if item.product.image %}
         <img class="img-fluid rounded"
              src="{{ item.product.image.url }}"
-             alt="{{ item.product.name }}"
-             style="border-radius: 14px; border: 1px solid var(--dd-border);">
+             alt="{{ item.product.name }}">
     {% else %}
         <img class="img-fluid rounded"
              src="{% static 'images/noimage.png' %}"
-             alt="{{ item.product.name }}"
-             style="border-radius: 14px; border: 1px solid var(--dd-border);">
+             alt="{{ item.product.name }}">
     {% endif %}
 </div>
