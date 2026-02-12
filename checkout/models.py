@@ -125,7 +125,7 @@ class OrderLineItem(models.Model):
         """
         Set lineitem_total using per-license pricing, then update order totals.
         """
-        license_type = self.license_type or "personal"
+        license_type = ( self.license_type or "personal").lower()
         unit_price = self.product.get_price_for_license(license_type)
         self.lineitem_total = unit_price * self.quantity
 
