@@ -25,9 +25,19 @@
 
       {% if order %}
         <p class="text-muted">
-          Your order information is below. A confirmation email will be sent to
+          Your order is confirmed. A confirmation email will be sent to
           <strong>{{ order.email }}</strong>.
         </p>
+
+        <div class="dd-card p-3 mb-3">
+          <div class="font-weight-bold" style="color: var(--dd-text);">
+            Digital delivery
+          </div>
+          <p class="mb-0" style="color: var(--dd-muted);">
+            Your download/access details will be emailed to you shortly. No shipping required.
+          </p>
+        </div>
+
       {% else %}
         <p class="text-muted mb-2">
           Your payment was received. We’re finalising your order now.
@@ -60,7 +70,7 @@
       {% else %}
         <a href="{% url 'products' %}" class="btn btn-black rounded-0">
           <span class="icon"><i class="fas fa-tags"></i></span>
-          <span class="font-weight-bold">Check out the latest deals!</span>
+          <span class="font-weight-bold">Browse more templates</span>
         </a>
       {% endif %}
     </div>
@@ -99,12 +109,14 @@
         <div class="row">
           <div class="col-6">
             <small class="font-weight-bold">{{ item.product.name }}</small>
+            {% if item.license_type %}
+              <div>
+                <small class="text-muted">License: {{ item.license_type|title }}</small>
+              </div>
+            {% endif %}
           </div>
           <div class="col-6 text-right">
             <small>
-              {% if item.product_size %}
-                Size {{ item.product_size|upper }} |
-              {% endif %}
               Qty {{ item.quantity }} |
               £{{ item.lineitem_total|floatformat:2 }}
             </small>
@@ -114,21 +126,14 @@
 
         <hr>
 
-        <!-- Delivery Address -->
+        <!-- Digital Delivery (replaces address block) -->
         <div class="row">
           <div class="col">
-            <small class="text-muted">Delivering To:</small>
+            <small class="text-muted">Delivery:</small>
           </div>
         </div>
-
-        <p class="mb-0">{{ order.full_name }}</p>
-        <p class="mb-0">{{ order.street_address1 }}</p>
-        {% if order.street_address2 %}<p class="mb-0">{{ order.street_address2 }}</p>{% endif %}
-        <p class="mb-0">{{ order.town_or_city }}</p>
-        {% if order.county %}<p class="mb-0">{{ order.county }}</p>{% endif %}
-        {% if order.postcode %}<p class="mb-0">{{ order.postcode }}</p>{% endif %}
-        <p class="mb-0">{{ order.country }}</p>
-        <p class="mb-0">{{ order.phone_number }}</p>
+        <p class="mb-0">Digital delivery via email</p>
+        <p class="mb-0"><strong>{{ order.email }}</strong></p>
 
         <hr>
 
@@ -140,7 +145,7 @@
 
         <div class="row">
           <div class="col-6 font-weight-bold">Delivery</div>
-          <div class="col-6 text-right">£{{ order.delivery_cost|floatformat:2 }}</div>
+          <div class="col-6 text-right">£0.00</div>
         </div>
 
         <div class="row">

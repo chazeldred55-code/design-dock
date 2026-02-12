@@ -1,6 +1,7 @@
-from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib import messages
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render, reverse
+
 from products.models import Product
 
 
@@ -12,34 +13,29 @@ def view_bag(request):
 def add_to_bag(request, item_id):
     """Add a quantity of the specified product + license type to the shopping bag."""
     product = get_object_or_404(Product, pk=item_id)
+
+    item_id = str(item_id)  # session keys are strings
     quantity = int(request.POST.get("quantity", 1))
     redirect_url = request.POST.get("redirect_url", reverse("products"))
 
-    # For Design Dock: license type replaces "size"
-    license_type = request.POST.get("license_type", "personal")
+    license_type = (request.POST.get("license_type") or "personal").lower().strip()
 
     bag = request.session.get("bag", {})
 
-    if item_id in bag:
-        if license_type in bag[item_id]["items_by_license"]:
-            bag[item_id]["items_by_license"][license_type] += quantity
-            messages.success(
-                request,
-                f"Updated {product.name} ({license_type.title()} license) quantity to "
-                f"{bag[item_id]['items_by_license'][license_type]}."
-            )
-        else:
-            bag[item_id]["items_by_license"][license_type] = quantity
-            messages.success(
-                request,
-                f"Added {product.name} ({license_type.title()} license) to your bag."
-            )
-    else:
-        bag[item_id] = {"items_by_license": {license_type: quantity}}
-        messages.success(
-            request,
-            f"Added {product.name} ({license_type.title()} license) to your bag."
-        )
+    # Ensure structure exists
+    if item_id not in bag or not isinstance(bag.get(item_id), dict):
+        bag[item_id] = {"items_by_license": {}}
+    if "items_by_license" not in bag[item_id] or not isinstance(bag[item_id]["items_by_license"], dict):
+        bag[item_id]["items_by_license"] = {}
+
+    bag[item_id]["items_by_license"][license_type] = (
+        bag[item_id]["items_by_license"].get(license_type, 0) + quantity
+    )
+
+    messages.success(
+        request,
+        f"Added {product.name} ({license_type.title()} license) to your bag."
+    )
 
     request.session["bag"] = bag
     return redirect(redirect_url)
@@ -48,8 +44,10 @@ def add_to_bag(request, item_id):
 def adjust_bag(request, item_id):
     """Adjust the quantity of the specified product/license to the specified amount."""
     product = get_object_or_404(Product, pk=item_id)
+
+    item_id = str(item_id)
     quantity = int(request.POST.get("quantity", 1))
-    license_type = request.POST.get("license_type", "personal")
+    license_type = (request.POST.get("license_type") or "personal").lower().strip()
 
     bag = request.session.get("bag", {})
 
@@ -83,8 +81,10 @@ def remove_from_bag(request, item_id):
     Designed to be called via AJAX and return HTTP 200 on success.
     """
     product = get_object_or_404(Product, pk=item_id)
+
+    item_id = str(item_id)
     bag = request.session.get("bag", {})
-    license_type = request.POST.get("license_type", "personal")
+    license_type = (request.POST.get("license_type") or "personal").lower().strip()
 
     try:
         if item_id in bag and "items_by_license" in bag[item_id]:

@@ -103,7 +103,7 @@
               <!-- Price -->
               <div class="col-2 text-right">
                 <div style="color: var(--dd-text); font-variant-numeric: tabular-nums;">
-                  £{{ item.product.price }}
+                  £{{ item.unit_price|floatformat:2 }}
                 </div>
               </div>
 
@@ -115,7 +115,7 @@
               <!-- Subtotal -->
               <div class="col-2 text-right">
                 <div style="font-weight: 800; color: var(--dd-text); font-variant-numeric: tabular-nums;">
-                  £{{ item.product.price|calc_subtotal:item.quantity }}
+                  £{{ item.line_total|floatformat:2 }}
                 </div>
               </div>
 
@@ -165,10 +165,11 @@
             <!-- Price + subtotal -->
             <div class="col-12 col-sm-3 mt-3 mt-sm-0">
               <p class="mb-1" style="color: var(--dd-muted); font-size: .92rem;">
-                Price: <span style="color: var(--dd-text);">£{{ item.product.price }}</span>
+                Price:
+                <span style="color: var(--dd-text);">£{{ item.unit_price|floatformat:2 }}</span>
               </p>
               <p class="mb-0" style="font-weight: 800; color: var(--dd-text);">
-                Subtotal: £{{ item.product.price|calc_subtotal:item.quantity }}
+                Subtotal: £{{ item.line_total|floatformat:2 }}
               </p>
             </div>
 

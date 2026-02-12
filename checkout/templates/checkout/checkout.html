@@ -41,6 +41,20 @@
     </div>
   </div>
 
+  <!-- Digital delivery message -->
+  <div class="row">
+    <div class="col-12">
+      <div class="dd-card p-3 mb-4">
+        <div style="font-weight: 800; color: var(--dd-text);">
+          Digital delivery
+        </div>
+        <p class="mb-0" style="color: var(--dd-muted);">
+          No shipping required. You’ll receive access/download details by email after payment.
+        </p>
+      </div>
+    </div>
+  </div>
+
   <div class="row">
 
     <!-- Order Summary -->
@@ -90,9 +104,9 @@
                 {{ item.product.name }}
               </div>
 
-              {% if item.size %}
+              {% if item.license_type %}
                 <div style="color: var(--dd-muted); font-size: .92rem;">
-                  Size: {{ item.size|upper }}
+                  License: {{ item.license_type|title }}
                 </div>
               {% endif %}
 
@@ -103,7 +117,7 @@
 
             <div class="col-5 text-right">
               <div style="color: var(--dd-text); font-variant-numeric: tabular-nums;">
-                £{{ item.product.price|calc_subtotal:item.quantity }}
+                £{{ item.line_total|floatformat:2 }}
               </div>
             </div>
           </div>
@@ -113,13 +127,11 @@
 
         <div class="row text-right" style="color: var(--dd-text);">
           <div class="col-7">
-            <p class="my-1" style="color: var(--dd-muted);">Order total</p>
-            <p class="my-1" style="color: var(--dd-muted);">Delivery</p>
+            <p class="my-1" style="color: var(--dd-muted);">Total</p>
             <p class="my-1" style="font-weight: 800;">Grand total</p>
           </div>
           <div class="col-5" style="font-variant-numeric: tabular-nums;">
             <p class="my-1">£{{ total|floatformat:2 }}</p>
-            <p class="my-1">£{{ delivery|floatformat:2 }}</p>
             <p class="my-1" style="font-weight: 800;">£{{ grand_total|floatformat:2 }}</p>
           </div>
         </div>
@@ -132,10 +144,10 @@
       <div class="dd-card p-4">
 
         <h5 class="mb-1" style="font-weight: 800; color: var(--dd-text);">
-          Delivery + payment
+          Details + payment
         </h5>
         <p class="mb-0" style="color: var(--dd-muted);">
-          Fill in your details, then confirm payment.
+          Enter your details, then confirm payment.
         </p>
 
         <hr class="my-4" style="border-color: var(--dd-border);">
@@ -146,7 +158,7 @@
           <!-- Stripe PID is set by JS before submitting -->
           <input type="hidden" name="stripe_pid" id="id_stripe_pid" value="">
 
-          <!-- Optional: useful if you want it available in your POST handler -->
+          <!-- Useful for POST handler -->
           <input type="hidden" name="client_secret" id="id_client_secret_input" value="{{ client_secret }}">
 
           <!-- Cache endpoint URL (JS should read this instead of hardcoding) -->
@@ -157,18 +169,7 @@
             <legend class="small mb-2" style="color: var(--dd-muted);">Details</legend>
             {{ order_form.full_name|as_crispy_field }}
             {{ order_form.email|as_crispy_field }}
-          </fieldset>
-
-          <!-- Delivery -->
-          <fieldset class="mb-4">
-            <legend class="small mb-2" style="color: var(--dd-muted);">Delivery</legend>
             {{ order_form.phone_number|as_crispy_field }}
-            {{ order_form.country|as_crispy_field }}
-            {{ order_form.postcode|as_crispy_field }}
-            {{ order_form.town_or_city|as_crispy_field }}
-            {{ order_form.street_address1|as_crispy_field }}
-            {{ order_form.street_address2|as_crispy_field }}
-            {{ order_form.county|as_crispy_field }}
 
             <div class="form-check mt-3 text-right">
               {% if user.is_authenticated %}
@@ -178,14 +179,14 @@
                        name="save_info"
                        checked>
                 <label class="form-check-label" for="id-save-info" style="color: var(--dd-muted);">
-                  Save delivery info to my profile
+                  Save my details to my profile
                 </label>
               {% else %}
                 <label class="form-check-label" style="color: var(--dd-muted);">
                   <a href="{% url 'account_signup' %}">Create an account</a>
                   or
                   <a href="{% url 'account_login' %}">login</a>
-                  to save this information
+                  to save your details
                 </label>
               {% endif %}
             </div>

@@ -1,1 +1,1 @@
-Order Confirmation - {{ order.order_number }}
+Order ConfirmatioDesign Dock – Order Confirmation {{ order.order_number }}

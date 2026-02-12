@@ -16,12 +16,14 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    LICENSE_CHOICES = [
-        ("personal", "Personal"),
-        ("commercial", "Commercial"),
-        ("extended", "Extended"),
-    ]
+    """
+    Digital design product.
 
+    Key point:
+    - License is chosen per purchase (stored in bag + OrderLineItem),
+      so Product should NOT store a fixed license_type.
+    - Pricing can vary by license (personal/commercial/extended).
+    """
     category = models.ForeignKey(
         "Category",
         null=True,
@@ -34,23 +36,33 @@ class Product(models.Model):
     name = models.CharField(max_length=254)
     description = models.TextField()
 
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    # Per-license pricing
+    price_personal = models.DecimalField(max_digits=6, decimal_places=2)
+    price_commercial = models.DecimalField(max_digits=6, decimal_places=2)
+    price_extended = models.DecimalField(max_digits=6, decimal_places=2)
+
     rating = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
     image_url = models.URLField(max_length=1024, null=True, blank=True)
     image = models.ImageField(null=True, blank=True)
 
-    # Digital store fields
+    # Digital delivery fields
     is_digital = models.BooleanField(default=True)
     file = models.FileField(upload_to="digital_products/", null=True, blank=True)
     download_url = models.URLField(max_length=1024, null=True, blank=True)
 
-    # Replace sizes with license type
-    license_type = models.CharField(
-        max_length=20,
-        choices=LICENSE_CHOICES,
-        default="personal",
-    )
-
     def __str__(self):
         return self.name
+
+    def get_price_for_license(self, license_type: str):
+        """
+        Return the correct price based on the chosen license type.
+        Defaults to personal if unknown.
+        """
+        license_type = (license_type or "personal").lower()
+
+        if license_type == "commercial":
+            return self.price_commercial
+        if license_type == "extended":
+            return self.price_extended
+        return self.price_personal

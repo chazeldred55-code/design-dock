@@ -1,12 +1,26 @@
 Hi {{ order.full_name }},
 
-Thanks for your order!
+Thank you for your order at Design Dock!
 
-Your order number is {{ order.order_number }}.
+Order number: {{ order.order_number }}
 
-Order Total: £{{ order.grand_total }}
+----------------------------------------
+Order summary:
+{% for item in order.lineitems.all %}
+- {{ item.product.name }}
+  License: {{ item.license_type|title }}
+  Quantity: {{ item.quantity }}
+  Line total: £{{ item.lineitem_total|floatformat:2 }}
+{% endfor %}
+----------------------------------------
 
-If you have any questions, reply to this email or contact us at {{ contact_email }}.
+Grand Total: £{{ order.grand_total|floatformat:2 }}
 
-Thanks,
-The Boutique Ado Team
+Digital delivery:
+Your download or access details will be sent to this email address shortly.
+No physical shipping is required.
+
+If you have any questions, simply reply to this email or contact us at {{ contact_email }}.
+
+Thanks for choosing Design Dock,
+The Design Dock Team

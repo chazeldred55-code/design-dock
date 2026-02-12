@@ -1,5 +1,6 @@
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
+
 from products.models import Product
 
 
@@ -9,6 +10,7 @@ def bag_contents(request):
 
     Design store version:
     - Bag items are stored by license type (items_by_license)
+    - Pricing depends on license (personal/commercial/extended)
     - Digital products => no delivery charge
     """
     bag_items = []
@@ -21,11 +23,13 @@ def bag_contents(request):
 
         # Expected structure:
         # bag[item_id] = {"items_by_license": {"personal": 1, "commercial": 2}}
-        items_by_license = item_data.get("items_by_license", {})
+        items_by_license = (item_data or {}).get("items_by_license", {})
 
         for license_type, quantity in items_by_license.items():
             quantity = int(quantity)
-            line_total = product.price * quantity
+
+            unit_price = product.get_price_for_license(license_type)
+            line_total = unit_price * quantity
 
             total += line_total
             product_count += quantity
@@ -35,6 +39,7 @@ def bag_contents(request):
                 "quantity": quantity,
                 "product": product,
                 "license_type": license_type,
+                "unit_price": unit_price,
                 "line_total": line_total,
             })
 
