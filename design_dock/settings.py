@@ -35,7 +35,7 @@ ALLOWED_HOSTS = [
     h.strip()
     for h in os.environ.get(
         "ALLOWED_HOSTS",
-        "localhost,127.0.0.1", "design-dock-9a1c5bd13893.herokuapp.com",
+        "localhost,127.0.0.1,design-dock-9a1c5bd13893.herokuapp.com",
     ).split(",")
     if h.strip()
 ]
