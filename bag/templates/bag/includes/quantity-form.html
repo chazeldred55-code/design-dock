@@ -1,73 +1,77 @@
+{# bag/templates/bag/includes/quantity-form.html #}
 <div class="col-12 col-sm-3 mt-3 mt-sm-0">
 
-    <!-- Quantity Update Form -->
+  {% with lt=item.license_type|default:"personal" %}
+    {# Quantity Update Form #}
     <form class="form update-form"
           method="POST"
           action="{% url 'adjust_bag' item.item_id %}">
-        {% csrf_token %}
+      {% csrf_token %}
 
-        <!-- License type (design store) -->
-        {% if item.license_type %}
-            <input type="hidden" name="license_type" value="{{ item.license_type }}">
-        {% else %}
-            <input type="hidden" name="license_type" value="personal">
-        {% endif %}
+      {# License type (design store) #}
+      <input type="hidden" name="license_type" value="{{ lt }}">
 
-        <!-- Quantity label -->
-        <label for="id_qty_{{ item.item_id }}" class="small text-muted">
-            Quantity
-        </label>
+      {# Quantity label #}
+      <label for="id_qty_{{ item.item_id }}_{{ lt }}" class="small text-muted">
+        Quantity
+      </label>
 
-        <!-- Quantity input group -->
-        <div class="input-group input-group-sm">
+      {# Quantity input group #}
+      <div class="input-group input-group-sm">
 
-            <!-- Decrement -->
-            <div class="input-group-prepend">
-                <button type="button"
-                        class="decrement-qty btn btn-sm btn-outline-black"
-                        data-item_id="{{ item.item_id }}"
-                        id="decrement-qty_{{ item.item_id }}">
-                    <span class="icon">
-                        <i class="fas fa-minus"></i>
-                    </span>
-                </button>
-            </div>
-
-            <!-- Input -->
-            <input class="form-control form-control-sm qty_input"
-                   type="number"
-                   name="quantity"
-                   value="{{ item.quantity }}"
-                   min="1"
-                   max="99"
-                   data-item_id="{{ item.item_id }}"
-                   id="id_qty_{{ item.item_id }}">
-
-            <!-- Increment -->
-            <div class="input-group-append">
-                <button type="button"
-                        class="increment-qty btn btn-sm btn-outline-black"
-                        data-item_id="{{ item.item_id }}"
-                        id="increment-qty_{{ item.item_id }}">
-                    <span class="icon">
-                        <i class="fas fa-plus"></i>
-                    </span>
-                </button>
-            </div>
+        {# Decrement #}
+        <div class="input-group-prepend">
+          <button type="button"
+                  class="decrement-qty btn btn-sm btn-outline-black"
+                  data-item_id="{{ item.item_id }}"
+                  data-license_type="{{ lt }}"
+                  id="decrement-qty_{{ item.item_id }}_{{ lt }}">
+            <span class="icon">
+              <i class="fas fa-minus"></i>
+            </span>
+          </button>
         </div>
 
-        <!-- Update / Remove links -->
-        <div class="mt-2">
-            <a class="update-link text-info small">
-                Update
-            </a> |
-            <a class="remove-item text-danger small"
-               id="remove_{{ item.item_id }}"
-               data-url="{% url 'remove_from_bag' item.item_id %}"
-               data-license_type="{{ item.license_type|default:'personal' }}">
-                Remove
-            </a>
+        {# Input #}
+        <input class="form-control form-control-sm qty_input"
+               type="number"
+               name="quantity"
+               value="{{ item.quantity }}"
+               min="1"
+               max="99"
+               data-item_id="{{ item.item_id }}"
+               data-license_type="{{ lt }}"
+               id="id_qty_{{ item.item_id }}_{{ lt }}">
+
+        {# Increment #}
+        <div class="input-group-append">
+          <button type="button"
+                  class="increment-qty btn btn-sm btn-outline-black"
+                  data-item_id="{{ item.item_id }}"
+                  data-license_type="{{ lt }}"
+                  id="increment-qty_{{ item.item_id }}_{{ lt }}">
+            <span class="icon">
+              <i class="fas fa-plus"></i>
+            </span>
+          </button>
         </div>
+
+      </div>
+
+      {# Update / Remove links #}
+      <div class="mt-2">
+        <a class="update-link text-info small">
+          Update
+        </a> |
+        <a class="remove-item text-danger small"
+           id="remove_{{ item.item_id }}_{{ lt }}"
+           data-url="{% url 'remove_from_bag' item.item_id %}"
+           data-license_type="{{ lt }}">
+          Remove
+        </a>
+      </div>
 
     </form>
+  {% endwith %}
+
 </div>

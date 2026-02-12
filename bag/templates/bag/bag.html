@@ -1,6 +1,6 @@
+{# bag/templates/bag/bag.html #}
 {% extends "base.html" %}
 {% load static %}
-{% load bag_tools %}
 
 {% block page_header %}
 <div class="container header-container">
@@ -50,7 +50,7 @@
           <div class="row" style="color: var(--dd-muted); font-size: .9rem;">
             <div class="col-2">Preview</div>
             <div class="col-4">Template</div>
-            <div class="col-2 text-right">Price</div>
+            <div class="col-2 text-right">Unit price</div>
             <div class="col-2">Quantity</div>
             <div class="col-2 text-right">Subtotal</div>
           </div>
@@ -100,7 +100,7 @@
                 </div>
               </div>
 
-              <!-- Price -->
+              <!-- Unit price -->
               <div class="col-2 text-right">
                 <div style="color: var(--dd-text); font-variant-numeric: tabular-nums;">
                   £{{ item.unit_price|floatformat:2 }}
@@ -162,10 +162,10 @@
             {% include "bag/includes/product-image.html" %}
             {% include "bag/includes/product-info.html" %}
 
-            <!-- Price + subtotal -->
+            <!-- Unit price + subtotal -->
             <div class="col-12 col-sm-3 mt-3 mt-sm-0">
               <p class="mb-1" style="color: var(--dd-muted); font-size: .92rem;">
-                Price:
+                Unit price:
                 <span style="color: var(--dd-text);">£{{ item.unit_price|floatformat:2 }}</span>
               </p>
               <p class="mb-0" style="font-weight: 800; color: var(--dd-text);">
@@ -210,31 +210,9 @@
 
 {% block postloadjs %}
   {{ block.super }}
-  {% include "products/includes/quantity_input_script.html" %}
+  {% include "bag/includes/quantity_input_script.html" %}
 
   <script>
-    // Submit the update form when Update clicked
-    $(".update-link").click(function (e) {
-      e.preventDefault();
-      $(this).closest("div").find("form.update-form").submit();
-    });
-
-    // Remove item (POST to /bag/remove/<itemId>/ with license_type) using Django URL from data-url
-    $(".remove-item").click(function (e) {
-      e.preventDefault();
-      const csrfToken = "{{ csrf_token }}";
-      const url = $(this).data("url");
-      const licenseType = $(this).data("license_type");
-
-      const data = {
-        csrfmiddlewaretoken: csrfToken,
-        license_type: licenseType
-      };
-
-      $.post(url, data).done(function () {
-        location.reload();
-      });
-    });
 
     // Back to top
     $(".btt-link").click(function (e) {
