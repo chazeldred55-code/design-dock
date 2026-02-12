@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 
 
@@ -16,16 +17,14 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    """
-    Digital design product.
+    LICENSE_CHOICES = [
+        ("personal", "Personal"),
+        ("commercial", "Commercial"),
+        ("extended", "Extended"),
+    ]
 
-    Key point:
-    - License is chosen per purchase (stored in bag + OrderLineItem),
-      so Product should NOT store a fixed license_type.
-    - Pricing can vary by license (personal/commercial/extended).
-    """
     category = models.ForeignKey(
-        "Category",
+        Category,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -34,35 +33,65 @@ class Product(models.Model):
 
     sku = models.CharField(max_length=254, null=True, blank=True)
     name = models.CharField(max_length=254)
-    description = models.TextField()
+    description = models.TextField(blank=True)
 
-    # Per-license pricing
-    price_personal = models.DecimalField(max_digits=6, decimal_places=2)
-    price_commercial = models.DecimalField(max_digits=6, decimal_places=2)
-    price_extended = models.DecimalField(max_digits=6, decimal_places=2)
+    # -----------------------------
+    # License-Based Pricing
+    # -----------------------------
+    price_personal = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=Decimal("10.00"),
+    )
 
-    rating = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    price_commercial = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=Decimal("25.00"),
+    )
 
+    price_extended = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=Decimal("75.00"),
+    )
+
+    rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    # -----------------------------
+    # Media
+    # -----------------------------
     image_url = models.URLField(max_length=1024, null=True, blank=True)
-    image = models.ImageField(null=True, blank=True)
+    image = models.ImageField(upload_to="product_images/", null=True, blank=True)
 
-    # Digital delivery fields
+    # -----------------------------
+    # Digital Product Fields
+    # -----------------------------
     is_digital = models.BooleanField(default=True)
     file = models.FileField(upload_to="digital_products/", null=True, blank=True)
     download_url = models.URLField(max_length=1024, null=True, blank=True)
 
-    def __str__(self):
-        return self.name
-
+    # -----------------------------
+    # Utility Methods
+    # -----------------------------
     def get_price_for_license(self, license_type: str):
         """
-        Return the correct price based on the chosen license type.
-        Defaults to personal if unknown.
+        Return the correct unit price for a given license type.
+        Defaults to personal if missing or invalid.
         """
-        license_type = (license_type or "personal").lower()
+        lt = (license_type or "personal").lower()
 
-        if license_type == "commercial":
+        if lt == "commercial":
             return self.price_commercial
-        if license_type == "extended":
+        if lt == "extended":
             return self.price_extended
+
         return self.price_personal
+
+    def __str__(self):
+        return self.name
