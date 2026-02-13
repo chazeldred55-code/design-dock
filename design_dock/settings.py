@@ -1,6 +1,6 @@
 """
 Django settings for Design Dock project.
-Production-ready, Heroku + S3 configuration.
+Production-ready configuration for Heroku + S3.
 """
 
 from pathlib import Path
@@ -39,7 +39,6 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
-# Heroku HTTPS handling
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
@@ -57,7 +56,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
 
-    # Third-party
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -65,7 +63,6 @@ INSTALLED_APPS = [
     "crispy_bootstrap4",
     "storages",
 
-    # Project apps
     "products",
     "bag",
     "checkout",
@@ -185,7 +182,7 @@ USE_TZ = True
 
 
 # --------------------------------------------------
-# STATIC FILES (Local default)
+# STATIC FILES (Local Default)
 # --------------------------------------------------
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -195,16 +192,16 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # --------------------------------------------------
-# MEDIA FILES (Local default)
+# MEDIA FILES (Local Default)
 # --------------------------------------------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
 # --------------------------------------------------
-# AWS / S3 (Production)
+# AWS / S3 (Production Only)
 # --------------------------------------------------
-if os.environ.get("USE_AWS") == "True":
+if not DEBUG:
 
     AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
@@ -220,12 +217,12 @@ if os.environ.get("USE_AWS") == "True":
 
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
-    # Static files
+    # Static
     STATICFILES_LOCATION = "static"
     STATICFILES_STORAGE = "custom_storages.StaticStorage"
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
 
-    # Media files
+    # Media
     MEDIAFILES_LOCATION = "media"
     DEFAULT_FILE_STORAGE = "custom_storages.MediaStorage"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
