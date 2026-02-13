@@ -215,6 +215,10 @@ if "USE_AWS" in os.environ:
     MEDIAFILES_LOCATION = "media"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
+    AWS_DEFAULT_ACL = "public-read"
+AWS_QUERYSTRING_AUTH = False
+
+
 
 # --------------------------------------------------
 # DEFAULT PRIMARY KEY
