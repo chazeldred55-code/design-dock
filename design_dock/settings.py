@@ -1,11 +1,12 @@
 """
 Django settings for Design Dock project.
-Production-ready configuration for Heroku + S3.
+Production-ready configuration for Heroku + S3 (Django STORAGES).
 """
 
 from pathlib import Path
 import os
 from decimal import Decimal
+
 import dj_database_url
 from dotenv import load_dotenv
 from django.core.management.utils import get_random_secret_key
@@ -39,6 +40,7 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
+# Heroku HTTPS handling
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
@@ -48,6 +50,7 @@ CSRF_COOKIE_SECURE = not DEBUG
 # APPLICATIONS
 # --------------------------------------------------
 INSTALLED_APPS = [
+    # Django core
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -56,6 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
 
+    # Third-party
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -63,6 +67,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap4",
     "storages",
 
+    # Project apps
     "products",
     "bag",
     "checkout",
@@ -149,9 +154,7 @@ TEMPLATES = [
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
-    DATABASES = {
-        "default": dj_database_url.parse(DATABASE_URL)
-    }
+    DATABASES = {"default": dj_database_url.parse(DATABASE_URL)}
 else:
     DATABASES = {
         "default": {
@@ -182,27 +185,33 @@ USE_TZ = True
 
 
 # --------------------------------------------------
-# STATIC FILES (Local Default)
+# STATIC + MEDIA (Local defaults)
 # --------------------------------------------------
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-
-# --------------------------------------------------
-# MEDIA FILES (Local Default)
-# --------------------------------------------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+# --------------------------------------------------
+# STORAGES (Django 4.2+/5.x compatible)
+# --------------------------------------------------
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+}
 
 
 # --------------------------------------------------
 # AWS / S3 (Production Only)
 # --------------------------------------------------
 if not DEBUG:
-
     AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -217,15 +226,20 @@ if not DEBUG:
 
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
-    # Static
     STATICFILES_LOCATION = "static"
-    STATICFILES_STORAGE = "custom_storages.StaticStorage"
-    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
-
-    # Media
     MEDIAFILES_LOCATION = "media"
-    DEFAULT_FILE_STORAGE = "custom_storages.MediaStorage"
+
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
+
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "custom_storages.StaticStorage",
+        },
+        "default": {
+            "BACKEND": "custom_storages.MediaStorage",
+        },
+    }
 
 
 # --------------------------------------------------
@@ -237,7 +251,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --------------------------------------------------
 # MESSAGES
 # --------------------------------------------------
-from django.contrib.messages import constants as messages
+from django.contrib.messages import constants as messages  # noqa: E402
 
 MESSAGE_TAGS = {messages.ERROR: "danger"}
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
