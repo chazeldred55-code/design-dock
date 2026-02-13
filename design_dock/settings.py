@@ -1,12 +1,11 @@
 """
 Django settings for Design Dock project.
-Production-ready, Stripe-integrated configuration.
+Production-ready, Heroku + S3 configuration.
 """
 
 from pathlib import Path
 import os
 from decimal import Decimal
-
 import dj_database_url
 from dotenv import load_dotenv
 from django.core.management.utils import get_random_secret_key
@@ -40,12 +39,16 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
+# Heroku HTTPS handling
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
 
 # --------------------------------------------------
 # APPLICATIONS
 # --------------------------------------------------
 INSTALLED_APPS = [
-    # Django core
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -102,6 +105,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 # --------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -181,43 +185,50 @@ USE_TZ = True
 
 
 # --------------------------------------------------
-# STATIC FILES
+# STATIC FILES (Local default)
 # --------------------------------------------------
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 # --------------------------------------------------
-# MEDIA FILES
+# MEDIA FILES (Local default)
 # --------------------------------------------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
 # --------------------------------------------------
-# AWS / S3 (Production Only)
+# AWS / S3 (Production)
 # --------------------------------------------------
-if "USE_AWS" in os.environ:
+if os.environ.get("USE_AWS") == "True":
+
     AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
-
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-
-    STATICFILES_STORAGE = "custom_storages.StaticStorage"
-    STATICFILES_LOCATION = "static"
-    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
-
-    DEFAULT_FILE_STORAGE = "custom_storages.MediaStorage"
-    MEDIAFILES_LOCATION = "media"
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=86400",
+    }
 
     AWS_DEFAULT_ACL = "public-read"
-AWS_QUERYSTRING_AUTH = False
+    AWS_QUERYSTRING_AUTH = False
 
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+    # Static files
+    STATICFILES_LOCATION = "static"
+    STATICFILES_STORAGE = "custom_storages.StaticStorage"
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
+
+    # Media files
+    MEDIAFILES_LOCATION = "media"
+    DEFAULT_FILE_STORAGE = "custom_storages.MediaStorage"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
 
 # --------------------------------------------------
@@ -229,7 +240,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --------------------------------------------------
 # MESSAGES
 # --------------------------------------------------
-from django.contrib.messages import constants as messages  # noqa
+from django.contrib.messages import constants as messages
 
 MESSAGE_TAGS = {messages.ERROR: "danger"}
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
@@ -248,11 +259,7 @@ STANDARD_DELIVERY_PERCENTAGE = Decimal(os.environ.get("STANDARD_DELIVERY_PERCENT
 STRIPE_CURRENCY = os.getenv("STRIPE_CURRENCY", "gbp")
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY", "")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
-
-# Canonical webhook secret
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-
-# Backwards compatibility (so existing code using STRIPE_WH_SECRET still works)
 STRIPE_WH_SECRET = STRIPE_WEBHOOK_SECRET
 
 
@@ -268,5 +275,5 @@ else:
     EMAIL_PORT = 587
     EMAIL_HOST = "smtp.gmail.com"
     EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-    EMAIL_HOST_PASS = os.environ.get("EMAIL_HOST_PASS", "")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
