@@ -10,6 +10,7 @@ from decimal import Decimal
 import dj_database_url
 from dotenv import load_dotenv
 from django.core.management.utils import get_random_secret_key
+from django.contrib.messages import constants as messages
 
 
 # --------------------------------------------------
@@ -28,7 +29,6 @@ load_dotenv(BASE_DIR / ".env")
 # SECURITY
 # --------------------------------------------------
 SECRET_KEY = os.environ.get("SECRET_KEY", get_random_secret_key())
-
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
@@ -44,6 +44,10 @@ ALLOWED_HOSTS = [
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+
+# Recommended production extras (safe)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
 
 
 # --------------------------------------------------
@@ -196,7 +200,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 
 # --------------------------------------------------
-# STORAGES (Django 4.2+/5.x compatible)
+# STORAGES (Local/default)
 # --------------------------------------------------
 STORAGES = {
     "staticfiles": {
@@ -217,11 +221,11 @@ if not DEBUG:
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=86400",
-    }
+    # Cache headers for better performance
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 
-    AWS_DEFAULT_ACL = "public-read"
+    # ✅ IMPORTANT: Bucket-owner-enforced buckets do NOT allow ACLs
+    AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = False
 
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
@@ -232,13 +236,10 @@ if not DEBUG:
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
+    # Use your custom storages
     STORAGES = {
-        "staticfiles": {
-            "BACKEND": "custom_storages.StaticStorage",
-        },
-        "default": {
-            "BACKEND": "custom_storages.MediaStorage",
-        },
+        "staticfiles": {"BACKEND": "custom_storages.StaticStorage"},
+        "default": {"BACKEND": "custom_storages.MediaStorage"},
     }
 
 
@@ -251,8 +252,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --------------------------------------------------
 # MESSAGES
 # --------------------------------------------------
-from django.contrib.messages import constants as messages  # noqa: E402
-
 MESSAGE_TAGS = {messages.ERROR: "danger"}
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
