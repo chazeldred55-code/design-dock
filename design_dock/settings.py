@@ -10,7 +10,6 @@ from decimal import Decimal
 import dj_database_url
 from dotenv import load_dotenv
 from django.core.management.utils import get_random_secret_key
-from django.contrib.messages import constants as messages
 
 
 # --------------------------------------------------
@@ -22,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --------------------------------------------------
 # ENVIRONMENT
 # --------------------------------------------------
+# Local .env (ignored on Heroku; Heroku uses config vars)
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -45,10 +45,6 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
-# Recommended production extras (safe)
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-
 
 # --------------------------------------------------
 # APPLICATIONS
@@ -62,7 +58,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
-
     # Third-party
     "allauth",
     "allauth.account",
@@ -70,7 +65,6 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap4",
     "storages",
-
     # Project apps
     "products",
     "bag",
@@ -111,6 +105,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 # --------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoise is fine locally; in production your static is served from S3
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -200,8 +195,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 
 # --------------------------------------------------
-# STORAGES (Local/default)
+# STORAGES (Local defaults)
 # --------------------------------------------------
+# Local: WhiteNoise + local filesystem uploads
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -215,16 +211,19 @@ STORAGES = {
 # --------------------------------------------------
 # AWS / S3 (Production Only)
 # --------------------------------------------------
+# IMPORTANT: Heroku DEBUG should be False, so S3 is used in production.
 if not DEBUG:
-    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "")
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
 
-    # Cache headers for better performance
-    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+    # Cache headers
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=86400",
+    }
 
-    # ✅ IMPORTANT: Bucket-owner-enforced buckets do NOT allow ACLs
+    # Bucket owner enforced buckets (ACLs disabled)
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = False
 
@@ -236,10 +235,14 @@ if not DEBUG:
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
-    # Use your custom storages
+    # Use your custom storages (must NOT set public-read ACLs)
     STORAGES = {
-        "staticfiles": {"BACKEND": "custom_storages.StaticStorage"},
-        "default": {"BACKEND": "custom_storages.MediaStorage"},
+        "staticfiles": {
+            "BACKEND": "custom_storages.StaticStorage",
+        },
+        "default": {
+            "BACKEND": "custom_storages.MediaStorage",
+        },
     }
 
 
@@ -252,6 +255,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --------------------------------------------------
 # MESSAGES
 # --------------------------------------------------
+from django.contrib.messages import constants as messages  # noqa: E402
+
 MESSAGE_TAGS = {messages.ERROR: "danger"}
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
