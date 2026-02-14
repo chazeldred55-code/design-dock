@@ -151,21 +151,19 @@
 
         <hr class="my-4" style="border-color: var(--dd-border);">
 
-        <form method="POST" action="{% url 'checkout' %}" id="payment-form">
+        <form method="POST" action="{% url 'checkout' %}" id="payment-form" novalidate>
           {% csrf_token %}
 
-          <!-- Stripe PID is set by JS before submitting -->
-          <input type="hidden" name="stripe_pid" id="id_stripe_pid" value="">
-
-          <!-- Useful for POST handler -->
+          {# REQUIRED: views.py reads request.POST["client_secret"] #}
           <input type="hidden" name="client_secret" id="id_client_secret_input" value="{{ client_secret }}">
 
-          <!-- Cache endpoint URL (JS should read this instead of hardcoding) -->
+          {# Used by JS to POST cache_checkout_data #}
           <input type="hidden" id="id_cache_url" value="{% url 'cache_checkout_data' %}">
 
           <!-- Details -->
           <fieldset class="mb-4">
             <legend class="small mb-2" style="color: var(--dd-muted);">Details</legend>
+
             {{ order_form.full_name|as_crispy_field }}
             {{ order_form.email|as_crispy_field }}
             {{ order_form.phone_number|as_crispy_field }}
@@ -176,7 +174,8 @@
                        type="checkbox"
                        id="id-save-info"
                        name="save_info"
-                       checked>
+                       checked
+                       autocomplete="off">
                 <label class="form-check-label" for="id-save-info" style="color: var(--dd-muted);">
                   Save my details to my profile
                 </label>
@@ -206,7 +205,8 @@
                 <span class="font-weight-bold">Adjust bag</span>
               </a>
 
-              <button id="submit-button" class="btn btn-dd-primary" type="submit">
+              {# IMPORTANT: type="button" so the browser cannot do a default submit/navigation #}
+              <button id="submit-button" class="btn btn-dd-primary" type="button">
                 <span class="font-weight-bold">Complete order</span>
                 <span class="icon"><i class="fas fa-lock"></i></span>
               </button>
@@ -229,6 +229,7 @@
 {% block postloadjs %}
 {{ block.super }}
 
+{# json_script blocks used by stripe_elements.js #}
 {{ stripe_public_key|default:""|json_script:"id_stripe_public_key" }}
 {{ client_secret|default:""|json_script:"id_client_secret" }}
 

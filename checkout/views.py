@@ -34,7 +34,9 @@ def cache_checkout_data(request):
         stripe.PaymentIntent.modify(
             pid,
             metadata={
-                "username": request.user.username if request.user.is_authenticated else "anonymous",
+                "username": (
+                    request.user.username if request.user.is_authenticated else "anonymous"
+                ),
                 "save_info": request.POST.get("save_info", ""),
                 "bag": json.dumps(request.session.get("bag", {})),
             },
@@ -42,10 +44,7 @@ def cache_checkout_data(request):
         return HttpResponse(status=200)
 
     except Exception as e:
-        messages.error(
-            request,
-            "Sorry, your payment cannot be processed right now. Please try again later.",
-        )
+        # Return error text so the frontend can show it.
         return HttpResponse(content=str(e), status=400)
 
 
@@ -53,13 +52,16 @@ def checkout(request):
     """
     GET:
       - Render checkout page + create PaymentIntent
-    POST:
-      - Create Order + line items, then redirect to checkout_success (order_number)
 
-    Design store updates:
+    POST:
+      - Create Order + line items
+      - Save Stripe PID from client_secret
+      - Redirect to checkout_success
+
+    Notes for Design Dock (digital store):
       - Bag uses items_by_license
       - OrderLineItem stores license_type
-      - Digital store: delivery is 0
+      - Delivery is 0 (handled in bag totals)
     """
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -71,6 +73,13 @@ def checkout(request):
     current_bag = bag_contents(request)
     grand_total = Decimal(str(current_bag["grand_total"]))
     stripe_total = int((grand_total * 100).quantize(Decimal("1")))
+
+    # Optional safety: Stripe cannot charge 0 (or below minimum for currency)
+    if stripe_total < 50 and settings.STRIPE_CURRENCY.lower() in ("gbp", "eur", "usd"):
+        # Stripe minimums vary by currency; 50 is a common safe floor for these.
+        # Adjust if your store supports cheaper products.
+        messages.error(request, "Order total is too small to process a card payment.")
+        return redirect(reverse("view_bag"))
 
     if request.method == "POST":
         form_data = {
@@ -90,6 +99,7 @@ def checkout(request):
         if order_form.is_valid():
             order = order_form.save(commit=False)
 
+            # Your JS MUST submit this as a hidden field.
             client_secret = request.POST.get("client_secret", "")
             if "_secret" not in client_secret:
                 messages.error(request, "Payment reference missing. Please try again.")
@@ -114,9 +124,11 @@ def checkout(request):
                     )
 
             save_info = request.POST.get("save_info")
-            request.session["save_info"] = True if save_info else False
+            request.session["save_info"] = bool(save_info)
 
-            return redirect(reverse("checkout_success", args=[order.order_number]))
+            return redirect(
+                reverse("checkout_success", args=[order.order_number])
+            )
 
         messages.error(
             request,
@@ -126,17 +138,19 @@ def checkout(request):
     # GET (or POST invalid): prefill form for logged-in users
     if request.user.is_authenticated:
         profile = get_object_or_404(UserProfile, user=request.user)
-        order_form = OrderForm(initial={
-            "full_name": request.user.get_full_name(),
-            "email": request.user.email,
-            "phone_number": profile.default_phone_number,
-            "country": profile.default_country,
-            "postcode": profile.default_postcode,
-            "town_or_city": profile.default_town_or_city,
-            "street_address1": profile.default_street_address1,
-            "street_address2": profile.default_street_address2,
-            "county": profile.default_county,
-        })
+        order_form = OrderForm(
+            initial={
+                "full_name": request.user.get_full_name(),
+                "email": request.user.email,
+                "phone_number": profile.default_phone_number,
+                "country": profile.default_country,
+                "postcode": profile.default_postcode,
+                "town_or_city": profile.default_town_or_city,
+                "street_address1": profile.default_street_address1,
+                "street_address2": profile.default_street_address2,
+                "county": profile.default_county,
+            }
+        )
     else:
         order_form = OrderForm()
 
