@@ -1,7 +1,7 @@
 /* global Stripe */
 console.log("stripe_elements.js LOADED");
 window.__DD_STRIPE_HANDLER_LOADED__ = true;
-console.log("✅ DD Stripe handler script attached");
+console.log("✅ Stripe handler attached");
 
 (function () {
 
@@ -27,7 +27,7 @@ console.log("✅ DD Stripe handler script attached");
   }
 
   // -------------------------
-  // Prevent native form submit
+  // Block native form submit
   // -------------------------
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -37,7 +37,7 @@ console.log("✅ DD Stripe handler script attached");
   });
 
   // -------------------------
-  // Read Stripe config
+  // Parse Stripe config
   // -------------------------
   let stripePublicKey;
   let clientSecret;
@@ -46,12 +46,12 @@ console.log("✅ DD Stripe handler script attached");
     stripePublicKey = JSON.parse(pkEl.textContent);
     clientSecret = JSON.parse(csEl.textContent);
   } catch (err) {
-    console.error("Stripe JSON parse error", err);
+    console.error("Stripe config parse error:", err);
     return;
   }
 
   if (!stripePublicKey || !clientSecret) {
-    console.error("Missing Stripe key or client secret.");
+    console.error("Missing Stripe public key or client secret.");
     return;
   }
 
@@ -60,7 +60,7 @@ console.log("✅ DD Stripe handler script attached");
   }
 
   // -------------------------
-  // Stripe Elements setup
+  // Stripe Elements
   // -------------------------
   const stripe = Stripe(stripePublicKey);
   const elements = stripe.elements();
@@ -139,7 +139,7 @@ console.log("✅ DD Stripe handler script attached");
   }
 
   // -------------------------
-  // Main click handler
+  // Main payment flow
   // -------------------------
   let processing = false;
 
