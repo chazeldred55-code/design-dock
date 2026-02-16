@@ -5,3 +5,5 @@ __pycache___
 .env
 # Collected static files
 staticfiles/
+
+media/
