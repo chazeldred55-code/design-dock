@@ -3,10 +3,9 @@ from django.db import models
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=254)
+    name = models.CharField(max_length=254, unique=True)
     friendly_name = models.CharField(max_length=254, null=True, blank=True)
-    description = models.TextField(blank=True)
-
+    description = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Categories"
@@ -35,7 +34,7 @@ class Product(models.Model):
 
     sku = models.CharField(max_length=254, null=True, blank=True)
     name = models.CharField(max_length=254)
-    description = models.TextField(blank=True)
+    description = models.TextField(null=True, blank=True)
 
     # -----------------------------
     # License-Based Pricing
@@ -70,6 +69,13 @@ class Product(models.Model):
     # -----------------------------
     image_url = models.URLField(max_length=1024, null=True, blank=True)
     image = models.ImageField(upload_to="product_images/", null=True, blank=True)
+
+    # ✅ NEW: Static preview image filename (stored in /static/images/media/product_images/)
+    # Example values:
+    #   "saas_dashboard.png"
+    #   "finance_admin_dashboard.png"
+    #   "saas-analytics-dashboard.png"
+    image_filename = models.CharField(max_length=255, null=True, blank=True)
 
     # -----------------------------
     # Digital Product Fields

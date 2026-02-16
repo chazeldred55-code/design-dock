@@ -23,7 +23,6 @@
           <h2 class="mb-2" style="font-weight: 800; color: var(--dd-text);">
             {{ c.friendly_name|default:c.name }}
           </h2>
-
           <p class="mb-0" style="color: var(--dd-muted);">
             {{ c.description|default:"Browse reusable UI kits, components, and design assets." }}
           </p>
@@ -70,7 +69,7 @@
   <div class="row">
     <div class="product-container col-10 offset-1">
 
-      <!-- Count + reset + sorting -->
+      <!-- Count + sorting -->
       <div class="row mt-3 mb-3 align-items-center">
 
         <div class="col-12 col-md-6 my-2">
@@ -104,33 +103,15 @@
                            color: var(--dd-text);
                            border: 1px solid var(--dd-border);
                            border-radius: 12px;">
-              <option value="reset" {% if current_sorting == "None_None" %}selected{% endif %}>
-                Sort by...
-              </option>
-              <option value="price_asc" {% if current_sorting == "price_asc" %}selected{% endif %}>
-                Price (low to high)
-              </option>
-              <option value="price_desc" {% if current_sorting == "price_desc" %}selected{% endif %}>
-                Price (high to low)
-              </option>
-              <option value="rating_asc" {% if current_sorting == "rating_asc" %}selected{% endif %}>
-                Rating (low to high)
-              </option>
-              <option value="rating_desc" {% if current_sorting == "rating_desc" %}selected{% endif %}>
-                Rating (high to low)
-              </option>
-              <option value="name_asc" {% if current_sorting == "name_asc" %}selected{% endif %}>
-                Name (A-Z)
-              </option>
-              <option value="name_desc" {% if current_sorting == "name_desc" %}selected{% endif %}>
-                Name (Z-A)
-              </option>
-              <option value="category_asc" {% if current_sorting == "category_asc" %}selected{% endif %}>
-                Category (A-Z)
-              </option>
-              <option value="category_desc" {% if current_sorting == "category_desc" %}selected{% endif %}>
-                Category (Z-A)
-              </option>
+              <option value="reset" {% if current_sorting == "None_None" %}selected{% endif %}>Sort by...</option>
+              <option value="price_asc" {% if current_sorting == "price_asc" %}selected{% endif %}>Price (low to high)</option>
+              <option value="price_desc" {% if current_sorting == "price_desc" %}selected{% endif %}>Price (high to low)</option>
+              <option value="rating_asc" {% if current_sorting == "rating_asc" %}selected{% endif %}>Rating (low to high)</option>
+              <option value="rating_desc" {% if current_sorting == "rating_desc" %}selected{% endif %}>Rating (high to low)</option>
+              <option value="name_asc" {% if current_sorting == "name_asc" %}selected{% endif %}>Name (A-Z)</option>
+              <option value="name_desc" {% if current_sorting == "name_desc" %}selected{% endif %}>Name (Z-A)</option>
+              <option value="category_asc" {% if current_sorting == "category_asc" %}selected{% endif %}>Category (A-Z)</option>
+              <option value="category_desc" {% if current_sorting == "category_desc" %}selected{% endif %}>Category (Z-A)</option>
             </select>
           </div>
         </div>
@@ -145,28 +126,45 @@
 
               <!-- Image -->
               <a href="{% url 'product_detail' product.id %}" class="d-block">
-                {% if product.image %}
+
+                {% if product.image_filename %}
+                  <img class="img-fluid"
+                       src="{% static 'images/media/product_images/'|add:product.image_filename %}"
+                       alt="{{ product.name }}"
+                       style="width:100%; height:190px; object-fit:cover;"
+                       onerror="this.onerror=null;this.src='{% static 'images/noimage.png' %}';">
+
+                {% elif product.image_url %}
+                  <img class="img-fluid"
+                       src="{{ product.image_url }}"
+                       alt="{{ product.name }}"
+                       style="width:100%; height:190px; object-fit:cover;"
+                       onerror="this.onerror=null;this.src='{% static 'images/noimage.png' %}';">
+
+                {% elif product.image %}
                   <img class="img-fluid"
                        src="{{ product.image.url }}"
                        alt="{{ product.name }}"
-                       style="width:100%; height: 190px; object-fit: cover;">
+                       style="width:100%; height:190px; object-fit:cover;"
+                       onerror="this.onerror=null;this.src='{% static 'images/noimage.png' %}';">
+
                 {% else %}
                   <img class="img-fluid"
                        src="{% static 'images/noimage.png' %}"
                        alt="{{ product.name }}"
-                       style="width:100%; height: 190px; object-fit: cover;">
+                       style="width:100%; height:190px; object-fit:cover;">
                 {% endif %}
+
               </a>
 
               <!-- Body -->
               <div class="p-3">
 
                 <div class="d-flex justify-content-between align-items-start">
-                  <h6 class="mb-1" style="font-weight: 800; color: var(--dd-text);">
+                  <h6 class="mb-1" style="font-weight:800; color:var(--dd-text);">
                     {{ product.name }}
                   </h6>
-
-                  <span class="badge badge-white px-2 py-1" style="font-variant-numeric: tabular-nums;">
+                  <span class="badge badge-white px-2 py-1">
                     £{{ product.price_personal }}
                   </span>
                 </div>
@@ -182,20 +180,18 @@
                   </div>
                 {% endif %}
 
-                <!-- Short description -->
                 {% if product.description %}
                   <p class="mt-2 mb-0"
-                     style="color: var(--dd-muted); font-size: .9rem; line-height: 1.35;">
+                     style="color: var(--dd-muted); font-size:.9rem;">
                     {{ product.description|truncatechars:90 }}
                   </p>
                 {% else %}
                   <p class="mt-2 mb-0"
-                     style="color: var(--dd-muted); font-size: .9rem; line-height: 1.35; opacity: .7;">
+                     style="color: var(--dd-muted); font-size:.9rem; opacity:.7;">
                     No description yet.
                   </p>
                 {% endif %}
 
-                <!-- License hint -->
                 <div class="mt-2">
                   <small style="color: var(--dd-muted);">
                     Licenses: Personal • Commercial • Extended
@@ -213,24 +209,15 @@
                   {% endif %}
 
                   <a href="{% url 'product_detail' product.id %}"
-                     class="btn btn-dd-outline btn-sm text-uppercase"
-                     style="padding:.35rem .6rem;">
+                     class="btn btn-dd-outline btn-sm text-uppercase">
                     View
                   </a>
                 </div>
 
               </div>
-
             </div>
 
           </div>
-
-          {% if forloop.counter|divisibleby:4 %}
-            <div class="col-12 d-none d-xl-block mb-5">
-              <hr style="border-color: var(--dd-border);">
-            </div>
-          {% endif %}
-
         {% empty %}
           <div class="col text-center mt-5">
             <p class="lead" style="color: var(--dd-muted);">No templates found.</p>
@@ -241,14 +228,6 @@
     </div>
   </div>
 
-</div>
-
-<!-- Back to top button -->
-<div class="btt-button shadow-sm rounded-0"
-     style="background: rgba(255,255,255,.06); border: 1px solid var(--dd-border);">
-  <a class="btt-link d-flex h-100">
-    <i class="fas fa-arrow-up mx-auto my-auto" style="color: var(--dd-text);"></i>
-  </a>
 </div>
 
 {% endblock %}
@@ -263,19 +242,14 @@
     if (selectedVal != "reset") {
       var sort = selectedVal.split("_")[0];
       var direction = selectedVal.split("_")[1];
-
       currentUrl.searchParams.set("sort", sort);
       currentUrl.searchParams.set("direction", direction);
-      window.location.replace(currentUrl);
     } else {
       currentUrl.searchParams.delete("sort");
       currentUrl.searchParams.delete("direction");
-      window.location.replace(currentUrl);
     }
-  });
 
-  $('.btt-link').click(function(e) {
-    window.scrollTo(0, 0);
+    window.location.replace(currentUrl);
   });
 </script>
 {% endblock %}
