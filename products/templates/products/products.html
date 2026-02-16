@@ -17,10 +17,35 @@
   <!-- Page Title -->
   <div class="row">
     <div class="col text-center mt-4">
-      <h2 class="mb-2" style="font-weight: 800; color: var(--dd-text);">Templates</h2>
-      <p class="mb-0" style="color: var(--dd-muted);">
-        Browse reusable UI kits, components, and design assets.
-      </p>
+
+      {% if current_categories and current_categories|length == 1 %}
+        {% with c=current_categories.0 %}
+          <h2 class="mb-2" style="font-weight: 800; color: var(--dd-text);">
+            {{ c.friendly_name|default:c.name }}
+          </h2>
+
+          <p class="mb-0" style="color: var(--dd-muted);">
+            {{ c.description|default:"Browse reusable UI kits, components, and design assets." }}
+          </p>
+        {% endwith %}
+
+      {% elif current_categories %}
+        <h2 class="mb-2" style="font-weight: 800; color: var(--dd-text);">
+          Selected Categories
+        </h2>
+        <p class="mb-0" style="color: var(--dd-muted);">
+          Browse reusable UI kits, components, and design assets.
+        </p>
+
+      {% else %}
+        <h2 class="mb-2" style="font-weight: 800; color: var(--dd-text);">
+          Templates
+        </h2>
+        <p class="mb-0" style="color: var(--dd-muted);">
+          Browse reusable UI kits, components, and design assets.
+        </p>
+      {% endif %}
+
       <hr class="w-50 mt-3 mb-1" style="border-color: var(--dd-border);">
     </div>
   </div>
@@ -41,7 +66,7 @@
     </div>
   {% endif %}
 
-  <!-- Templates Grid -->
+  <!-- Product Grid -->
   <div class="row">
     <div class="product-container col-10 offset-1">
 
@@ -51,11 +76,19 @@
         <div class="col-12 col-md-6 my-2">
           <p class="mb-0" style="color: var(--dd-muted);">
             {% if search_term or current_categories or current_sorting != 'None_None' %}
-              <a href="{% url 'products' %}" style="color: var(--dd-text); opacity: .85;">All Templates</a>
+              <a href="{% url 'products' %}" style="color: var(--dd-text); opacity: .85;">
+                All Templates
+              </a>
               <span style="opacity:.6;">|</span>
             {% endif %}
-            <span style="color: var(--dd-text); font-weight: 700;">{{ products|length }}</span>
-            <span style="opacity:.85;">template{{ products|length|pluralize }}</span>
+
+            <span style="color: var(--dd-text); font-weight: 700;">
+              {{ products|length }}
+            </span>
+            <span style="opacity:.85;">
+              template{{ products|length|pluralize }}
+            </span>
+
             {% if search_term %}
               <span style="opacity:.75;">found for</span>
               <strong>"{{ search_term }}"</strong>
@@ -71,15 +104,33 @@
                            color: var(--dd-text);
                            border: 1px solid var(--dd-border);
                            border-radius: 12px;">
-              <option value="reset" {% if current_sorting == "None_None" %}selected{% endif %}>Sort by...</option>
-              <option value="price_asc" {% if current_sorting == "price_asc" %}selected{% endif %}>Price (low to high)</option>
-              <option value="price_desc" {% if current_sorting == "price_desc" %}selected{% endif %}>Price (high to low)</option>
-              <option value="rating_asc" {% if current_sorting == "rating_asc" %}selected{% endif %}>Rating (low to high)</option>
-              <option value="rating_desc" {% if current_sorting == "rating_desc" %}selected{% endif %}>Rating (high to low)</option>
-              <option value="name_asc" {% if current_sorting == "name_asc" %}selected{% endif %}>Name (A-Z)</option>
-              <option value="name_desc" {% if current_sorting == "name_desc" %}selected{% endif %}>Name (Z-A)</option>
-              <option value="category_asc" {% if current_sorting == "category_asc" %}selected{% endif %}>Category (A-Z)</option>
-              <option value="category_desc" {% if current_sorting == "category_desc" %}selected{% endif %}>Category (Z-A)</option>
+              <option value="reset" {% if current_sorting == "None_None" %}selected{% endif %}>
+                Sort by...
+              </option>
+              <option value="price_asc" {% if current_sorting == "price_asc" %}selected{% endif %}>
+                Price (low to high)
+              </option>
+              <option value="price_desc" {% if current_sorting == "price_desc" %}selected{% endif %}>
+                Price (high to low)
+              </option>
+              <option value="rating_asc" {% if current_sorting == "rating_asc" %}selected{% endif %}>
+                Rating (low to high)
+              </option>
+              <option value="rating_desc" {% if current_sorting == "rating_desc" %}selected{% endif %}>
+                Rating (high to low)
+              </option>
+              <option value="name_asc" {% if current_sorting == "name_asc" %}selected{% endif %}>
+                Name (A-Z)
+              </option>
+              <option value="name_desc" {% if current_sorting == "name_desc" %}selected{% endif %}>
+                Name (Z-A)
+              </option>
+              <option value="category_asc" {% if current_sorting == "category_asc" %}selected{% endif %}>
+                Category (A-Z)
+              </option>
+              <option value="category_desc" {% if current_sorting == "category_desc" %}selected{% endif %}>
+                Category (Z-A)
+              </option>
             </select>
           </div>
         </div>
@@ -109,12 +160,14 @@
 
               <!-- Body -->
               <div class="p-3">
+
                 <div class="d-flex justify-content-between align-items-start">
                   <h6 class="mb-1" style="font-weight: 800; color: var(--dd-text);">
                     {{ product.name }}
                   </h6>
+
                   <span class="badge badge-white px-2 py-1" style="font-variant-numeric: tabular-nums;">
-                    £{{ product.price }}
+                    £{{ product.price_personal }}
                   </span>
                 </div>
 
@@ -127,6 +180,19 @@
                       {{ product.category.friendly_name|default:product.category.name }}
                     </a>
                   </div>
+                {% endif %}
+
+                <!-- Short description -->
+                {% if product.description %}
+                  <p class="mt-2 mb-0"
+                     style="color: var(--dd-muted); font-size: .9rem; line-height: 1.35;">
+                    {{ product.description|truncatechars:90 }}
+                  </p>
+                {% else %}
+                  <p class="mt-2 mb-0"
+                     style="color: var(--dd-muted); font-size: .9rem; line-height: 1.35; opacity: .7;">
+                    No description yet.
+                  </p>
                 {% endif %}
 
                 <!-- License hint -->
@@ -152,6 +218,7 @@
                     View
                   </a>
                 </div>
+
               </div>
 
             </div>
@@ -159,8 +226,11 @@
           </div>
 
           {% if forloop.counter|divisibleby:4 %}
-            <div class="col-12 d-none d-xl-block mb-5"><hr style="border-color: var(--dd-border);"></div>
+            <div class="col-12 d-none d-xl-block mb-5">
+              <hr style="border-color: var(--dd-border);">
+            </div>
           {% endif %}
+
         {% empty %}
           <div class="col text-center mt-5">
             <p class="lead" style="color: var(--dd-muted);">No templates found.</p>
