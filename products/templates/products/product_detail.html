@@ -48,7 +48,7 @@
 
     <!-- DETAILS -->
     <div class="col-12 col-lg-6">
-      <div class="dd-card p-4">
+      <div class="dd-card p-4 h-100 d-flex flex-column">
 
         <h2 style="font-weight:800; color:var(--dd-text);">
           {{ product.name }}
@@ -61,10 +61,53 @@
         </div>
 
         {% if product.description %}
-          <div style="color:var(--dd-text); opacity:.9;">
+          <div style="color:var(--dd-text); opacity:.9;" class="mb-4">
             {{ product.description }}
           </div>
         {% endif %}
+
+        <!-- ADD TO BAG -->
+        <form action="{% url 'add_to_bag' product.id %}" method="POST" class="mt-auto">
+          {% csrf_token %}
+
+          <!-- License type (optional but matches your view structure) -->
+          <div class="form-group mb-3" style="max-width: 260px;">
+            <label for="id_license_{{ product.id }}" style="font-weight:700; color:var(--dd-text);">
+              License type
+            </label>
+            <select id="id_license_{{ product.id }}" name="license_type" class="form-control">
+              <option value="personal" selected>Personal</option>
+              <option value="commercial">Commercial</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3" style="max-width: 160px;">
+            <label for="id_qty_{{ product.id }}" style="font-weight:700; color:var(--dd-text);">
+              Quantity
+            </label>
+            <input
+              type="number"
+              name="quantity"
+              value="1"
+              min="1"
+              max="99"
+              id="id_qty_{{ product.id }}"
+              class="form-control"
+            >
+          </div>
+
+          <input type="hidden" name="redirect_url" value="{{ request.path }}">
+
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-dark px-4">
+              Add to bag
+            </button>
+
+            <a href="{% url 'view_bag' %}" class="btn btn-outline-dark">
+              View bag
+            </a>
+          </div>
+        </form>
 
       </div>
     </div>
