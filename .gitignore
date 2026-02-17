@@ -7,3 +7,5 @@ __pycache___
 staticfiles/
 
 media/
+# Local utility scripts
+tools/
