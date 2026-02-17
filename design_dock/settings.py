@@ -1,6 +1,6 @@
 """
 Django settings for Design Dock project.
-Production-ready configuration for Heroku + S3 (Django STORAGES).
+Production-ready configuration for Heroku + optional S3 (django-storages).
 """
 
 from pathlib import Path
@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --------------------------------------------------
 # ENVIRONMENT
 # --------------------------------------------------
-# Local .env (ignored on Heroku; Heroku uses config vars)
+# Local only. Heroku uses Config Vars (this won't hurt on Heroku, but won't load a local file there).
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -29,6 +29,8 @@ load_dotenv(BASE_DIR / ".env")
 # SECURITY
 # --------------------------------------------------
 SECRET_KEY = os.environ.get("SECRET_KEY", get_random_secret_key())
+
+# DEBUG should be False on Heroku. If you set DEBUG=True locally, fine.
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
@@ -58,6 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+
     # Third-party
     "allauth",
     "allauth.account",
@@ -65,6 +68,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap4",
     "storages",
+
     # Project apps
     "products",
     "bag",
@@ -105,7 +109,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 # --------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # WhiteNoise is fine locally; in production your static is served from S3
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -184,7 +187,7 @@ USE_TZ = True
 
 
 # --------------------------------------------------
-# STATIC + MEDIA (Local defaults)
+# STATIC + MEDIA (defaults)
 # --------------------------------------------------
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -195,9 +198,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 
 # --------------------------------------------------
-# STORAGES (Local defaults)
+# STORAGES (defaults - local / non-S3)
 # --------------------------------------------------
-# Local: WhiteNoise + local filesystem uploads
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -209,40 +211,34 @@ STORAGES = {
 
 
 # --------------------------------------------------
-# AWS / S3 (Production Only)
+# AWS / S3 (only when configured)
 # --------------------------------------------------
-# IMPORTANT: Heroku DEBUG should be False, so S3 is used in production.
-if not DEBUG:
-    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
+USE_AWS = all([
+    os.environ.get("AWS_STORAGE_BUCKET_NAME"),
+    os.environ.get("AWS_ACCESS_KEY_ID"),
+    os.environ.get("AWS_SECRET_ACCESS_KEY"),
+])
+
+if USE_AWS:
+    AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
     AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "")
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+    AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
+    AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
 
-    # Cache headers
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=86400",
-    }
-
-    # Bucket owner enforced buckets (ACLs disabled)
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = False
 
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-
     STATICFILES_LOCATION = "static"
     MEDIAFILES_LOCATION = "media"
 
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
-    # Use your custom storages (must NOT set public-read ACLs)
     STORAGES = {
-        "staticfiles": {
-            "BACKEND": "custom_storages.StaticStorage",
-        },
-        "default": {
-            "BACKEND": "custom_storages.MediaStorage",
-        },
+        "staticfiles": {"BACKEND": "custom_storages.StaticStorage"},
+        "default": {"BACKEND": "custom_storages.MediaStorage"},
     }
 
 
