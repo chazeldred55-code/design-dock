@@ -107,10 +107,14 @@ Wireframes were created for:
 - Profile
 
 📌 **Wireframes:**  
-_Add images to `/documentation/wireframes/` and link them here._
 
-Example:
-- Home Wireframe: `![Home Wireframe](documentation/wireframes/home.png)`
+- Home Wireframe: ![Home Wireframe](documentation/wireframes/home.png)
+- Products Wireframe: ![Products Wireframe](documentation/wireframes/products.png)
+- Product Detail Wireframe: ![Product Detail Wireframe](documentation/wireframes/product-detail.png)
+- Bag Wireframe: ![Bag Wireframe](documentation/wireframes/bag.png)
+- Checkout Wireframe: ![Checkout Wireframe](documentation/wireframes/checkout.png)
+- Profile Wireframe: ![Profile Wireframe](documentation/wireframes/profile.png)
+
 
 ---
 
