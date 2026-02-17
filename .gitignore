@@ -9,3 +9,5 @@ staticfiles/
 media/
 # Local utility scripts
 tools/
+
+desktop.ini
