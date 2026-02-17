@@ -1,6 +1,6 @@
 """
-Django settings for Design Dock project.
-Production-ready configuration for Heroku + optional S3 (django-storages).
+Django settings for Design Dock
+Production-ready for Heroku + AWS S3 (eu-west-2)
 """
 
 from pathlib import Path
@@ -12,25 +12,17 @@ from dotenv import load_dotenv
 from django.core.management.utils import get_random_secret_key
 
 
-# --------------------------------------------------
-# BASE DIRECTORY
-# --------------------------------------------------
+# ==================================================
+# BASE DIR
+# ==================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# --------------------------------------------------
-# ENVIRONMENT
-# --------------------------------------------------
-# Local only. Heroku uses Config Vars (this won't hurt on Heroku, but won't load a local file there).
 load_dotenv(BASE_DIR / ".env")
 
 
-# --------------------------------------------------
+# ==================================================
 # SECURITY
-# --------------------------------------------------
+# ==================================================
 SECRET_KEY = os.environ.get("SECRET_KEY", get_random_secret_key())
-
-# DEBUG should be False on Heroku. If you set DEBUG=True locally, fine.
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
@@ -42,17 +34,16 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
-# Heroku HTTPS handling
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
 
-# --------------------------------------------------
+# ==================================================
 # APPLICATIONS
-# --------------------------------------------------
+# ==================================================
 INSTALLED_APPS = [
-    # Django core
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -69,7 +60,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap4",
     "storages",
 
-    # Project apps
+    # Local apps
     "products",
     "bag",
     "checkout",
@@ -80,9 +71,9 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 
-# --------------------------------------------------
-# AUTHENTICATION
-# --------------------------------------------------
+# ==================================================
+# AUTH
+# ==================================================
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
@@ -97,16 +88,16 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_USERNAME_REQUIRED = True
 
 
-# --------------------------------------------------
-# CRISPY FORMS
-# --------------------------------------------------
+# ==================================================
+# CRISPY
+# ==================================================
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 
-# --------------------------------------------------
+# ==================================================
 # MIDDLEWARE
-# --------------------------------------------------
+# ==================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -119,16 +110,16 @@ MIDDLEWARE = [
 ]
 
 
-# --------------------------------------------------
-# URLS / WSGI
-# --------------------------------------------------
+# ==================================================
+# URLS
+# ==================================================
 ROOT_URLCONF = "design_dock.urls"
 WSGI_APPLICATION = "design_dock.wsgi.application"
 
 
-# --------------------------------------------------
+# ==================================================
 # TEMPLATES
-# --------------------------------------------------
+# ==================================================
 TEMPLATES_DIR = BASE_DIR / "templates"
 
 TEMPLATES = [
@@ -150,9 +141,9 @@ TEMPLATES = [
 ]
 
 
-# --------------------------------------------------
+# ==================================================
 # DATABASE
-# --------------------------------------------------
+# ==================================================
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
@@ -166,9 +157,9 @@ else:
     }
 
 
-# --------------------------------------------------
+# ==================================================
 # PASSWORD VALIDATION
-# --------------------------------------------------
+# ==================================================
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -177,18 +168,18 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# --------------------------------------------------
+# ==================================================
 # INTERNATIONALIZATION
-# --------------------------------------------------
+# ==================================================
 LANGUAGE_CODE = "en-gb"
-TIME_ZONE = os.environ.get("TIME_ZONE", "UTC")
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
 
-# --------------------------------------------------
-# STATIC + MEDIA (defaults)
-# --------------------------------------------------
+# ==================================================
+# STATIC (Local Default)
+# ==================================================
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -196,10 +187,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-
-# --------------------------------------------------
-# STORAGES (defaults - local / non-S3)
-# --------------------------------------------------
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -210,9 +197,9 @@ STORAGES = {
 }
 
 
-# --------------------------------------------------
-# AWS / S3 (only when configured)
-# --------------------------------------------------
+# ==================================================
+# AWS / S3 CONFIG
+# ==================================================
 USE_AWS = all([
     os.environ.get("AWS_STORAGE_BUCKET_NAME"),
     os.environ.get("AWS_ACCESS_KEY_ID"),
@@ -221,15 +208,23 @@ USE_AWS = all([
 
 if USE_AWS:
     AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
-    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "")
     AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
     AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
 
-    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+    # 🔥 CRITICAL FIX — REGION MUST MATCH BUCKET
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "eu-west-2")
+
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = False
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=86400",
+    }
 
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    # 🔥 FIXED REGIONAL DOMAIN
+    AWS_S3_CUSTOM_DOMAIN = (
+        f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    )
+
     STATICFILES_LOCATION = "static"
     MEDIAFILES_LOCATION = "media"
 
@@ -237,46 +232,49 @@ if USE_AWS:
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
     STORAGES = {
-        "staticfiles": {"BACKEND": "custom_storages.StaticStorage"},
-        "default": {"BACKEND": "custom_storages.MediaStorage"},
+        "staticfiles": {
+            "BACKEND": "custom_storages.StaticStorage",
+        },
+        "default": {
+            "BACKEND": "custom_storages.MediaStorage",
+        },
     }
 
 
-# --------------------------------------------------
-# DEFAULT PRIMARY KEY
-# --------------------------------------------------
+# ==================================================
+# DEFAULT PK
+# ==================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# --------------------------------------------------
+# ==================================================
 # MESSAGES
-# --------------------------------------------------
-from django.contrib.messages import constants as messages  # noqa: E402
+# ==================================================
+from django.contrib.messages import constants as messages  # noqa
 
 MESSAGE_TAGS = {messages.ERROR: "danger"}
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 
-# --------------------------------------------------
+# ==================================================
 # BAG SETTINGS
-# --------------------------------------------------
+# ==================================================
 FREE_DELIVERY_THRESHOLD = Decimal(os.environ.get("FREE_DELIVERY_THRESHOLD", "50"))
 STANDARD_DELIVERY_PERCENTAGE = Decimal(os.environ.get("STANDARD_DELIVERY_PERCENTAGE", "10"))
 
 
-# --------------------------------------------------
+# ==================================================
 # STRIPE
-# --------------------------------------------------
+# ==================================================
 STRIPE_CURRENCY = os.getenv("STRIPE_CURRENCY", "gbp")
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY", "")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-STRIPE_WH_SECRET = STRIPE_WEBHOOK_SECRET
 
 
-# --------------------------------------------------
+# ==================================================
 # EMAIL
-# --------------------------------------------------
+# ==================================================
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     DEFAULT_FROM_EMAIL = "designdock@example.com"
