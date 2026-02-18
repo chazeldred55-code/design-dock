@@ -1,36 +1,52 @@
-{# products/templates/products/includes/quantity_input_script.html #}
 <script>
   /*
-    Quantity controls for product detail page
-    Works with:
-      id="id_qty_{{ product.id }}"
-      id="increment-qty_{{ product.id }}"
-      id="decrement-qty_{{ product.id }}"
-      class="qty_input"
+    Bag quantity controls (supports license variants)
+
+    Expected markup:
+      input:  id="id_qty_<itemId>_<license>"
+              data-item_id="<itemId>"
+              data-license_type="<license>"
+
+      buttons: id="increment-qty_<itemId>_<license>"
+               id="decrement-qty_<itemId>_<license>"
+               data-item_id="<itemId>"
+               data-license_type="<license>"
+
+      remove link:
+               class="remove-item"
+               data-url="/bag/remove/<itemId>/"
+               data-license_type="<license>"
   */
 
-  function handleEnableDisable(itemId) {
-    const $qtyInput = $(`#id_qty_${itemId}`);
+  function key(itemId, licenseType) {
+    return `${itemId}_${licenseType}`;
+  }
+
+  function handleEnableDisable(itemId, licenseType) {
+    const k = key(itemId, licenseType);
+    const $qtyInput = $(`#id_qty_${k}`);
     if (!$qtyInput.length) return;
 
     const currentValue = parseInt($qtyInput.val(), 10);
     const disableMinus = isNaN(currentValue) || currentValue <= 1;
     const disablePlus = !isNaN(currentValue) && currentValue >= 99;
 
-    $(`#decrement-qty_${itemId}`).prop("disabled", disableMinus);
-    $(`#increment-qty_${itemId}`).prop("disabled", disablePlus);
+    $(`#decrement-qty_${k}`).prop("disabled", disableMinus);
+    $(`#increment-qty_${k}`).prop("disabled", disablePlus);
   }
 
-  // Initialize on page load
+  // Init
   $(".qty_input").each(function () {
     const itemId = $(this).data("item_id");
-    handleEnableDisable(itemId);
+    const licenseType = $(this).data("license_type");
+    handleEnableDisable(itemId, licenseType);
   });
 
   // Manual typing
   $(".qty_input").on("change", function () {
     const itemId = $(this).data("item_id");
-    handleEnableDisable(itemId);
+    const licenseType = $(this).data("license_type");
+    handleEnableDisable(itemId, licenseType);
   });
 
   // Increment
@@ -38,16 +54,15 @@
     e.preventDefault();
 
     const itemId = $(this).data("item_id");
-    const $qtyInput = $(`#id_qty_${itemId}`);
+    const licenseType = $(this).data("license_type");
+    const k = key(itemId, licenseType);
 
+    const $qtyInput = $(`#id_qty_${k}`);
     let currentValue = parseInt($qtyInput.val(), 10);
     if (isNaN(currentValue) || currentValue < 1) currentValue = 1;
 
-    if (currentValue < 99) {
-      $qtyInput.val(currentValue + 1);
-    }
-
-    handleEnableDisable(itemId);
+    if (currentValue < 99) $qtyInput.val(currentValue + 1);
+    handleEnableDisable(itemId, licenseType);
   });
 
   // Decrement
@@ -55,15 +70,41 @@
     e.preventDefault();
 
     const itemId = $(this).data("item_id");
-    const $qtyInput = $(`#id_qty_${itemId}`);
+    const licenseType = $(this).data("license_type");
+    const k = key(itemId, licenseType);
 
+    const $qtyInput = $(`#id_qty_${k}`);
     let currentValue = parseInt($qtyInput.val(), 10);
     if (isNaN(currentValue) || currentValue < 1) currentValue = 1;
 
-    if (currentValue > 1) {
-      $qtyInput.val(currentValue - 1);
-    }
+    if (currentValue > 1) $qtyInput.val(currentValue - 1);
+    handleEnableDisable(itemId, licenseType);
+  });
 
-    handleEnableDisable(itemId);
+  // Update link submits its form
+  $(".update-link").on("click", function (e) {
+    e.preventDefault();
+    $(this).closest("form").submit();
+  });
+
+  // ✅ Remove item/license (AJAX) — sends license_type
+  $(".remove-item").on("click", function (e) {
+    e.preventDefault();
+
+    const url = $(this).data("url");
+    const licenseType = $(this).data("license_type");
+    const csrfToken = $('input[name="csrfmiddlewaretoken"]').first().val();
+
+    $.post(url, {
+      csrfmiddlewaretoken: csrfToken,
+      license_type: licenseType
+    })
+    .done(function () {
+      location.reload();
+    })
+    .fail(function (xhr) {
+      console.error("Remove failed:", xhr.status, xhr.responseText);
+      alert("Could not remove item. Check console/server logs.");
+    });
   });
 </script>
