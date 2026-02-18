@@ -263,11 +263,26 @@ Project development approach:
 
 ## 9. Deployment
 
-### Local Development
+This project can be run locally for development and deployed to Heroku for production.
+
+---
+
+### 9.1 Forking the GitHub Repository
+
+Forking allows you to create your own copy of this repository to work on without affecting the original.
+
+1. Log in to GitHub and open the repository: **design-dock**
+2. Click **Fork** (top-right)
+3. Choose your account and wait for the fork to complete
+
+---
+
+### 9.2 Cloning the GitHub Repository
+
+1. Open the repository on GitHub
+2. Click **Code** → copy the HTTPS URL
+3. In your terminal, run:
 
 ```bash
-git clone https://github.com/chazeldred55-code/design-dock
+git clone https://github.com/<your-username>/design-dock.git
 cd design-dock
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
