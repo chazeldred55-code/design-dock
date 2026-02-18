@@ -9,240 +9,194 @@ Design Dock is a full-stack e-commerce platform built with Django that allows us
 
 ## Table of Contents
 
-1. [Project Overview](#1-project-overview)
-2. [User Experience (UX)](#2-user-experience-ux)
-3. [Agile Methodology](#3-agile-methodology)
-4. [Features](#4-features)
-5. [Future Features](#5-future-features)
-6. [Database Design](#6-database-design)
-7. [Technologies Used](#7-technologies-used)
-8. [Testing](#8-testing)
-9. [Deployment](#9-deployment)
+1. [Project Overview](#1-project-overview)  
+2. [User Experience (UX)](#2-user-experience-ux)  
+3. [Design & UX Decisions](#3-design--ux-decisions)  
+4. [Agile Methodology](#4-agile-methodology)  
+5. [Features](#5-features)  
+6. [Future Features](#6-future-features)  
+7. [Database Design](#7-database-design)  
+8. [Technologies Used](#8-technologies-used)  
+9. [Testing](#9-testing)  
+10. [Deployment](#10-deployment)  
 
 ---
 
-## 1. Project Overview
+# 1. Project Overview
 
 ### 🧠 Purpose
 Design Dock was created to provide designers and creatives with a curated marketplace for design resources and merchandise.
 
 ### 🎯 Site Owner Goals
-- Sell design-related products
-- Manage inventory and categories
-- Process secure payments
-- Provide a professional e-commerce experience
+- Sell design-related products  
+- Manage inventory and categories  
+- Process secure payments  
+- Provide a professional e-commerce experience  
 
 ### 👤 User Goals
-- Browse products
-- Filter and search items
-- Add products to a shopping bag
-- Securely checkout
-- Manage account details and view order history
+- Browse products  
+- Filter and search items  
+- Add products to a shopping bag  
+- Securely checkout  
+- Manage account details and view order history  
 
 ---
 
-## 2. User Experience (UX)
+# 2. User Experience (UX)
 
 ### 🎯 Strategy Plane
 
 #### Target Audience
-- Designers
-- Students
-- Creative professionals
-- Small business owners
+- Designers  
+- Students  
+- Creative professionals  
+- Small business owners  
 
 #### User Stories
 
 **👤 Site User**
-- As a user, I want to browse products so I can find something I like.
-- As a user, I want to filter products by category.
-- As a user, I want to search for products.
-- As a user, I want to add items to my bag.
-- As a user, I want to securely purchase items.
-- As a user, I want to create an account and view order history.
+- Browse products  
+- Filter products by category  
+- Search for products  
+- Add items to bag  
+- Securely purchase items  
+- View order history  
 
-**👑 Site Owner (Admin)**
-- As an admin, I want to add products.
-- As an admin, I want to edit products.
-- As an admin, I want to delete products.
-- As an admin, I want to manage product categories.
-
----
-
-### 🗂 Scope Plane
-
-#### Core Requirements Implemented
-- ✅ CRUD functionality
-- ✅ Stripe payments
-- ✅ User authentication
-- ✅ Admin product management
-- ✅ Responsive design
-- ✅ Deployment to Heroku
-- ✅ Testing documented
+**👑 Site Owner**
+- Add products  
+- Edit products  
+- Delete products  
+- Manage categories  
 
 ---
 
-### 🏗 Structure Plane
+# 3. Design & UX Decisions
 
-#### Navigation Structure
-- Home
-- Products
-- Product Detail
-- Shopping Bag
-- Checkout
-- Profile
-- Admin Panel
+### 🎨 Visual Identity
+A minimal black and white branding style was chosen to reflect a professional, modern design-focused platform. The dark-accent approach keeps attention on product visuals while maintaining strong contrast for accessibility.
 
----
+### 🧱 Layout & Structure
+A card-based grid layout was implemented for product listings to maintain consistency, improve scanability, and support responsive scaling across breakpoints using Bootstrap’s mobile-first grid system.
 
-### 🖌 Skeleton Plane
+### 🧭 Navigation Design
+Navigation was simplified to reduce cognitive load. Primary navigation focuses on templates, the account dropdown separates user actions, and the shopping bag remains visible for quick access.
 
-Wireframes were created for:
-- Home page
-- Product listing
-- Product detail
-- Bag
-- Checkout
-- Profile
+### 🛒 Checkout Flow
+The checkout process was designed to be linear and distraction-free to reduce drop-off and support fast transaction completion. Stripe PaymentIntent was implemented for secure and modern payment handling.
 
-📌 **Wireframes:**  
-
-- Home Wireframe: ![Home Wireframe](documentation/wireframes/home.png)
-- Products Wireframe: ![Products Wireframe](documentation/wireframes/products.png)
-- Product Detail Wireframe: ![Product Detail Wireframe](documentation/wireframes/product-detail.png)
-- Bag Wireframe: ![Bag Wireframe](documentation/wireframes/bag.png)
-- Checkout Wireframe: ![Checkout Wireframe](documentation/wireframes/checkout.png)
-- Profile Wireframe: ![Profile Wireframe](documentation/wireframes/profile.png)
-
+### ♿ Accessibility Considerations
+- Semantic heading structure  
+- ARIA roles for dropdown navigation  
+- High contrast text  
+- Responsive layout  
+- Lighthouse accessibility audits performed  
 
 ---
 
-### 🎨 Surface Plane
+# 4. Agile Methodology
 
-Design Dock uses:
-- Minimal black/white branding
-- Clean layout
-- Clear CTA buttons
-- Consistent typography
-- Responsive Bootstrap grid
+A GitHub Projects board was used to track user stories, development tasks, bugs, and feature implementation. Development followed an iterative approach with incremental feature builds and clear commit messages.
 
 ---
 
-## 3. Agile Methodology
-
-A GitHub Projects board was used to track:
-- User stories
-- Development tasks
-- Bugs
-- Feature implementation
-
-Project development approach:
-- Iterative development
-- Feature branches where appropriate
-- Regular commits
-- Clear commit messages
-
----
-
-## 4. Features
+# 5. Features
 
 ### 🔐 Authentication
-- Register
-- Login
-- Logout
-- Profile management
+- Register  
+- Login  
+- Logout  
+- Profile management  
 
 ### 🛍 Product Browsing
-- Category filtering
-- Search functionality
-- Product detail view
+- Category filtering  
+- Search functionality  
+- Product detail view  
 
 ### 🛒 Shopping Bag
-- Add items
-- Update quantity
-- Remove items
-- View totals
+- Add items  
+- Update quantity  
+- Remove items  
+- View totals  
 
 ### 💳 Secure Checkout
-- Stripe payment integration (PaymentIntent)
-- Order confirmation
-- Webhook handling
+- Stripe PaymentIntent integration  
+- Order confirmation  
+- Webhook handling  
 
 ### 🛠 Admin Controls
-- Add product
-- Edit product
-- Delete product
-- Manage categories
+- Add product  
+- Edit product  
+- Delete product  
+- Manage categories  
 
 ### 📱 Responsive Design
-- Mobile-first layout
-- Bootstrap grid
-- Optimised layouts
+- Mobile-first layout  
+- Bootstrap grid  
+- Optimised layouts  
 
 ---
 
-## 5. Future Features
-- Wishlist functionality
-- Product reviews
-- Discount codes
-- Email order confirmation
-- Stock tracking dashboard
-- Subscription-based design packs
+# 6. Future Features
+
+- Wishlist functionality  
+- Product reviews  
+- Discount codes  
+- Email order confirmation  
+- Stock tracking dashboard  
+- Subscription-based design packs  
 
 ---
 
-## 6. Database Design
+# 7. Database Design
 
 ### Models Used
-- User (Django AllAuth)
-- Product
-- Category
-- Order
-- OrderLineItem
-- UserProfile
+- User (Django AllAuth)  
+- Product  
+- Category  
+- Order  
+- OrderLineItem  
+- UserProfile  
 
 ### Relationships
-- Product → Category (**ForeignKey**)
-- Order → UserProfile (**ForeignKey**)
-- OrderLineItem → Product (**ForeignKey**)
-- OrderLineItem → Order (**ForeignKey**)
-
-📌 _Optional improvement:_ include an ERD diagram image here.
+- Product → Category (ForeignKey)  
+- Order → UserProfile (ForeignKey)  
+- OrderLineItem → Product (ForeignKey)  
+- OrderLineItem → Order (ForeignKey)  
 
 ---
 
-## 7. Technologies Used
+# 8. Technologies Used
 
 ### Backend
-- Python
-- Django
+- Python  
+- Django  
 
 ### Database
-- SQLite (development)
-- PostgreSQL (production)
+- SQLite (development)  
+- PostgreSQL (production)  
 
 ### Payments
-- Stripe API
+- Stripe API  
 
 ### Frontend
-- HTML5
-- CSS3
-- Bootstrap
-- JavaScript
+- HTML5  
+- CSS3  
+- Bootstrap  
+- JavaScript  
 
 ### Deployment & Storage
-- Heroku
-- AWS S3 (static/media)
-- GitHub
+- Heroku  
+- AWS S3  
+- GitHub  
 
 ---
 
-## 8. Testing
+# 9. Testing
 
-### Manual Testing
+## Manual Testing
 
 | Feature | Expected Result | Pass |
-|--------|------------------|------|
+|----------|----------------|------|
 | Add to bag | Item added correctly | ✅ |
 | Update quantity | Quantity updates | ✅ |
 | Remove item | Item removed | ✅ |
@@ -250,14 +204,9 @@ Project development approach:
 | Webhook | Order confirmed | ✅ |
 | Admin CRUD | Product changes persist | ✅ |
 
-### Validation / Quality
-- HTML validated via W3C (no critical issues)
-- CSS validated via W3C (no critical issues)
-- Python linting via flake8
-- Lighthouse testing (no critical errors remain)
-### Light house testing
+## Lighthouse Testing
 
-### Lighthouse Testing
+Lighthouse audits were run in Chrome DevTools with cache disabled.
 
 #### Home – Mobile
 ![Home Mobile](documentation/Lighthouse/lighthouse-home-mobile.png)
@@ -282,7 +231,8 @@ Project development approach:
 
 #### Checkout – Desktop
 ![Checkout Desktop](documentation/Lighthouse/lighthouse-checkout-desktop.png)
-### HTML Validation (W3C)
+
+## HTML Validation (W3C)
 
 #### Home
 ![Home Validation](documentation/W3C-Validator/html-home-pass.png)
@@ -296,15 +246,16 @@ Project development approach:
 #### Checkout
 ![Checkout Validation](documentation/W3C-Validator/html-checkout-pass.png)
 
-
 ---
-## 9. Deployment
+
+# 10. Deployment
+
 
 This project can be run locally for development and deployed to Heroku for production.
 
 ---
 
-### 9.1 Forking the Repository
+### 10.1 Forking the Repository
 
 1. Log in to GitHub.
 2. Navigate to the Design Dock repository.
@@ -313,7 +264,7 @@ This project can be run locally for development and deployed to Heroku for produ
 
 ---
 
-### 9.2 Cloning the Repository
+### 10.2 Cloning the Repository
 
 1. Open your forked repository.
 2. Click **Code** and copy the HTTPS URL.
@@ -326,7 +277,7 @@ cd design-dock
 
 ---
 
-### 9.3 Local Development Setup
+### 10.3 Local Development Setup
 
 #### Prerequisites
 
@@ -398,7 +349,7 @@ python manage.py runserver
 
 ---
 
-### 9.4 Heroku Deployment
+### 10.4 Heroku Deployment
 
 This project is deployed using Heroku with PostgreSQL.
 
@@ -455,7 +406,7 @@ heroku run python manage.py createsuperuser -a design-dock-9a1c5bd13893
 
 ---
 
-### 9.5 Static & Media Files (AWS S3)
+### 10.5 Static & Media Files (AWS S3)
 
 If `USE_AWS=True`, static and media files are stored in an AWS S3 bucket.
 
@@ -469,7 +420,7 @@ Setup summary:
 
 ---
 
-### 9.6 Stripe Webhooks (Production)
+### 10.6 Stripe Webhooks (Production)
 
 1. Go to **Stripe Dashboard → Developers → Webhooks**
 2. Add endpoint:
@@ -490,7 +441,7 @@ STRIPE_WH_SECRET=whsec_...
 
 ---
 
-### 9.7 Production Checklist
+### 10.7 Production Checklist
 
 - [ ] Live site loads without errors
 - [ ] Static files load correctly
