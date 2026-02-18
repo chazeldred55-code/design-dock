@@ -261,28 +261,186 @@ Project development approach:
 
 ---
 
-## 9. Deployment
-
 This project can be run locally for development and deployed to Heroku for production.
 
 ---
 
-### 9.1 Forking the GitHub Repository
+### 9.1 Forking the Repository
 
-Forking allows you to create your own copy of this repository to work on without affecting the original.
-
-1. Log in to GitHub and open the repository: **design-dock**
-2. Click **Fork** (top-right)
-3. Choose your account and wait for the fork to complete
+1. Log in to GitHub.
+2. Navigate to the Design Dock repository.
+3. Click the **Fork** button in the top right.
+4. Select your account to create a copy.
 
 ---
 
-### 9.2 Cloning the GitHub Repository
+### 9.2 Cloning the Repository
 
-1. Open the repository on GitHub
-2. Click **Code** → copy the HTTPS URL
-3. In your terminal, run:
+1. Open your forked repository.
+2. Click **Code** and copy the HTTPS URL.
+3. In your terminal:
 
 ```bash
 git clone https://github.com/<your-username>/design-dock.git
 cd design-dock
+
+9.3 Local Development Setup
+Prerequisites
+
+Python 3.11+
+
+pip
+
+Git
+
+Stripe account (for payment testing)
+
+AWS account (if using S3)
+
+Create Virtual Environment
+python -m venv .venv
+
+
+Activate:
+
+Windows:
+
+.venv\Scripts\activate
+
+
+Mac/Linux:
+
+source .venv/bin/activate
+
+Install Dependencies
+pip install -r requirements.txt
+
+Environment Variables
+
+Create a .env file in the root directory (same level as manage.py).
+
+Example:
+
+SECRET_KEY=your-secret-key
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost
+
+STRIPE_PUBLIC_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WH_SECRET=whsec_...
+
+# Optional AWS
+# USE_AWS=True
+# AWS_ACCESS_KEY_ID=...
+# AWS_SECRET_ACCESS_KEY=...
+# AWS_STORAGE_BUCKET_NAME=...
+# AWS_S3_REGION_NAME=...
+
+
+⚠️ Never commit your .env file.
+
+Apply Migrations
+python manage.py migrate
+
+Create Superuser
+python manage.py createsuperuser
+
+Run the Server
+python manage.py runserver
+
+9.4 Heroku Deployment
+
+This project is deployed using Heroku with Postgres.
+
+Create Heroku App
+
+Log into Heroku.
+
+Click New → Create New App.
+
+Choose a region.
+
+Add Heroku Postgres under Resources.
+
+Set Config Vars
+
+Go to:
+
+Settings → Reveal Config Vars
+
+Add:
+
+SECRET_KEY
+DEBUG=False
+ALLOWED_HOSTS=<your-app>.herokuapp.com
+DATABASE_URL (added automatically by Heroku)
+
+STRIPE_PUBLIC_KEY
+STRIPE_SECRET_KEY
+STRIPE_WH_SECRET
+
+
+If using AWS S3:
+
+USE_AWS=True
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_STORAGE_BUCKET_NAME
+AWS_S3_REGION_NAME
+
+Deploy via GitHub
+
+Open the Deploy tab.
+
+Connect GitHub.
+
+Select repository.
+
+Choose branch (main).
+
+Click Deploy Branch or enable automatic deploys.
+
+Run Migrations in Production
+heroku run python manage.py migrate -a <your-app-name>
+
+
+Create admin user:
+
+heroku run python manage.py createsuperuser -a <your-app-name>
+
+9.5 Static & Media Files (AWS S3)
+
+If USE_AWS=True, static and media files are stored in an AWS S3 bucket.
+
+Setup overview:
+
+Create S3 bucket
+
+Enable public read access for static files
+
+Add AWS credentials to Heroku Config Vars
+
+Ensure region matches Django settings
+
+collectstatic runs automatically during deployment
+
+9.6 Stripe Webhooks (Production)
+
+To enable Stripe payments on the live site:
+
+Go to Stripe Dashboard → Developers → Webhooks
+
+Add endpoint:
+
+https://<your-app>.herokuapp.com/checkout/wh/
+
+
+Select events:
+
+payment_intent.succeeded
+
+payment_intent.payment_failed
+
+Copy webhook signing secret and add to Heroku:
+
+STRIPE_WH_SECRET=whsec_...
