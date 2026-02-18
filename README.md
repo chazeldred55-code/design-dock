@@ -256,7 +256,33 @@ Project development approach:
 - CSS validated via W3C (no critical issues)
 - Python linting via flake8
 - Lighthouse testing (no critical errors remain)
+### Light house testing
 
+### Lighthouse Testing
+
+#### Home – Mobile
+![Home Mobile](documentation/Lighthouse/lighthouse-home-mobile.png)
+
+#### Home – Desktop
+![Home Desktop](documentation/Lighthouse/lighthouse-home-desktop.png)
+
+#### Products – Mobile
+![Products Mobile](documentation/Lighthouse/lighthouse-products-mobile.png)
+
+#### Products – Desktop
+![Products Desktop](documentation/Lighthouse/lighthouse-products-desktop.png)
+
+#### Bag – Mobile
+![Bag Mobile](documentation/Lighthouse/lighthouse-bag-mobile.png)
+
+#### Bag – Desktop
+![Bag Desktop](documentation/Lighthouse/lighthouse-bag-desktop.png)
+
+#### Checkout – Mobile
+![Checkout Mobile](documentation/Lighthouse/lighthouse-checkout-mobile.png)
+
+#### Checkout – Desktop
+![Checkout Desktop](documentation/Lighthouse/lighthouse-checkout-desktop.png)
 ### HTML Validation (W3C)
 
 #### Home
