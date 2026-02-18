@@ -259,9 +259,6 @@ Project development approach:
 
 📌 _Add screenshots of validation + Lighthouse reports in `/documentation/testing/` and link them here._
 
----
-
-This project can be run locally for development and deployed to Heroku for production.
 
 ---
 ## 9. Deployment
