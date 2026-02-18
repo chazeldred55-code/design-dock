@@ -257,7 +257,19 @@ Project development approach:
 - Python linting via flake8
 - Lighthouse testing (no critical errors remain)
 
-📌 _Add screenshots of validation + Lighthouse reports in `/documentation/testing/` and link them here._
+### HTML Validation (W3C)
+
+#### Home
+![Home Validation](documentation/W3C-Validator/html-home-pass.png)
+
+#### Products
+![Products Validation](documentation/W3C-Validator/html-products-pass.png)
+
+#### Bag
+![Bag Validation](documentation/W3C-Validator/html-bag-pass.png)
+
+#### Checkout
+![Checkout Validation](documentation/W3C-Validator/html-checkout-pass.png)
 
 
 ---
