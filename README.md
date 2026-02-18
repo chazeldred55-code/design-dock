@@ -204,6 +204,36 @@ A GitHub Projects board was used to track user stories, development tasks, bugs,
 | Webhook | Order confirmed | ✅ |
 | Admin CRUD | Product changes persist | ✅ |
 
+### Manual Testing Evidence
+### Manual Testing Evidence
+
+The following screenshots demonstrate successful manual testing of core functionality:
+
+#### 🛍 Add to Bag
+![Add to Bag](documentation/Manual-Testing/manual-add-to-bag.png)
+
+#### 🔄 Update Quantity
+![Update Quantity](documentation/Manual-Testing/manual-update-quantity.png)
+
+#### ❌ Remove Item
+![Remove Item](documentation/Manual-Testing/manual-remove-item.png)
+
+#### 💳 Checkout Success
+![Checkout Success](documentation/Manual-Testing/manual-checkout-success.png)
+
+#### 🔔 Webhook Confirmation
+![Webhook Confirmed](documentation/Manual-Testing/manual-webhook-confirmed.png)
+
+#### 🛠 Admin – Add Product
+![Admin Add Product](documentation/Manual-Testing/manual-admin-add.png)
+
+#### ✏ Admin – Edit Product
+![Admin Edit Product](documentation/Manual-Testing/manual-admin-edit.png)
+
+#### 🗑 Admin – Delete Product
+![Admin Delete Product](documentation/Manual-Testing/manual-admin-delete.png)
+
+
 ## Lighthouse Testing
 
 Lighthouse audits were run in Chrome DevTools with cache disabled.
