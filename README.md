@@ -283,7 +283,7 @@ This project can be run locally for development and deployed to Heroku for produ
 3. In your terminal:
 
 ```bash
-git clone https://github.com/<your-username>/design-dock.git
+git clone https://github.com/chazeldred55/design-dock.git
 cd design-dock
 
 9.3 Local Development Setup
