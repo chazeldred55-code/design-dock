@@ -34,9 +34,16 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
+# Heroku SSL headers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+
+# Optional (safe defaults)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"
 
 
 # ==================================================
@@ -51,7 +58,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
-
     # Third-party
     "allauth",
     "allauth.account",
@@ -59,7 +65,6 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap4",
     "storages",
-
     # Local apps
     "products",
     "bag",
@@ -96,11 +101,32 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 
 # ==================================================
+# AWS / S3 SWITCH
+# (Make decision early so middleware/static config is consistent)
+# ==================================================
+USE_AWS = all(
+    [
+        os.environ.get("AWS_STORAGE_BUCKET_NAME"),
+        os.environ.get("AWS_ACCESS_KEY_ID"),
+        os.environ.get("AWS_SECRET_ACCESS_KEY"),
+    ]
+)
+
+
+# ==================================================
 # MIDDLEWARE
+# - If S3 serves static, DON'T use WhiteNoise in production.
+# - If not using S3, WhiteNoise is fine (Heroku static).
 # ==================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+]
+
+if not USE_AWS:
+    # Only use WhiteNoise when serving static from the dyno filesystem
+    MIDDLEWARE += ["whitenoise.middleware.WhiteNoiseMiddleware"]
+
+MIDDLEWARE += [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -111,7 +137,7 @@ MIDDLEWARE = [
 
 
 # ==================================================
-# URLS
+# URLS / WSGI
 # ==================================================
 ROOT_URLCONF = "design_dock.urls"
 WSGI_APPLICATION = "design_dock.wsgi.application"
@@ -145,7 +171,6 @@ TEMPLATES = [
 # DATABASE
 # ==================================================
 DATABASE_URL = os.environ.get("DATABASE_URL")
-
 if DATABASE_URL:
     DATABASES = {"default": dj_database_url.parse(DATABASE_URL)}
 else:
@@ -178,7 +203,7 @@ USE_TZ = True
 
 
 # ==================================================
-# STATIC (Local Default)
+# STATIC / MEDIA (Local defaults)
 # ==================================================
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -187,40 +212,24 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-}
-
 
 # ==================================================
-# AWS / S3 CONFIG
+# STORAGE BACKENDS
+# - Local: WhiteNoise Manifest storage + filesystem media
+# - AWS: custom storages for static + media
 # ==================================================
-USE_AWS = all([
-    os.environ.get("AWS_STORAGE_BUCKET_NAME"),
-    os.environ.get("AWS_ACCESS_KEY_ID"),
-    os.environ.get("AWS_SECRET_ACCESS_KEY"),
-])
-
 if USE_AWS:
     AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
     AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
     AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
 
-    # 🔥 CRITICAL FIX — REGION MUST MATCH BUCKET
     AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "eu-west-2")
 
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = False
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=86400",
-    }
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 
-    # 🔥 FIXED REGIONAL DOMAIN
+    # Regional domain for eu-west-2
     AWS_S3_CUSTOM_DOMAIN = (
         f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
     )
@@ -232,12 +241,16 @@ if USE_AWS:
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
     STORAGES = {
+        "staticfiles": {"BACKEND": "custom_storages.StaticStorage"},
+        "default": {"BACKEND": "custom_storages.MediaStorage"},
+    }
+
+else:
+    STORAGES = {
         "staticfiles": {
-            "BACKEND": "custom_storages.StaticStorage",
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
         },
-        "default": {
-            "BACKEND": "custom_storages.MediaStorage",
-        },
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     }
 
 
@@ -250,7 +263,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # ==================================================
 # MESSAGES
 # ==================================================
-from django.contrib.messages import constants as messages  # noqa
+from django.contrib.messages import constants as messages  # noqa: E402
 
 MESSAGE_TAGS = {messages.ERROR: "danger"}
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
@@ -260,7 +273,9 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 # BAG SETTINGS
 # ==================================================
 FREE_DELIVERY_THRESHOLD = Decimal(os.environ.get("FREE_DELIVERY_THRESHOLD", "50"))
-STANDARD_DELIVERY_PERCENTAGE = Decimal(os.environ.get("STANDARD_DELIVERY_PERCENTAGE", "10"))
+STANDARD_DELIVERY_PERCENTAGE = Decimal(
+    os.environ.get("STANDARD_DELIVERY_PERCENTAGE", "10")
+)
 
 
 # ==================================================
