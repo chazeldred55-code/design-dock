@@ -264,6 +264,11 @@ Project development approach:
 This project can be run locally for development and deployed to Heroku for production.
 
 ---
+## 9. Deployment
+
+This project can be run locally for development and deployed to Heroku for production.
+
+---
 
 ### 9.1 Forking the Repository
 
