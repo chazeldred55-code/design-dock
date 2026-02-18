@@ -18,7 +18,6 @@ Design Dock is a full-stack e-commerce platform built with Django that allows us
 7. [Technologies Used](#7-technologies-used)
 8. [Testing](#8-testing)
 9. [Deployment](#9-deployment)
-10. [Credits](#10-credits)
 
 ---
 
@@ -318,49 +317,56 @@ This project can be run locally for development and deployed to Heroku for produ
 
 1. Open your forked repository.
 2. Click **Code** and copy the HTTPS URL.
-3. In your terminal:
+3. In your terminal run:
 
 ```bash
-git clone https://github.com/chazeldred55/design-dock.git
+git clone https://github.com/chazeldred55-code/design-dock.git
 cd design-dock
+```
 
-9.3 Local Development Setup
-Prerequisites
+---
 
-Python 3.11+
+### 9.3 Local Development Setup
 
-pip
+#### Prerequisites
 
-Git
+- Python 3.11+
+- pip
+- Git
+- Stripe account (for payment testing)
+- AWS account (if using S3)
 
-Stripe account (for payment testing)
+#### Create a Virtual Environment
 
-AWS account (if using S3)
-
-Create Virtual Environment
+```bash
 python -m venv .venv
-
+```
 
 Activate:
 
 Windows:
-
+```bash
 .venv\Scripts\activate
-
+```
 
 Mac/Linux:
-
+```bash
 source .venv/bin/activate
+```
 
-Install Dependencies
+#### Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-Environment Variables
+#### Environment Variables
 
-Create a .env file in the root directory (same level as manage.py).
+Create a `.env` file in the project root (same level as `manage.py`).
 
 Example:
 
+```env
 SECRET_KEY=your-secret-key
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
@@ -368,119 +374,127 @@ ALLOWED_HOSTS=127.0.0.1,localhost
 STRIPE_PUBLIC_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WH_SECRET=whsec_...
+```
 
-# Optional AWS
-# USE_AWS=True
-# AWS_ACCESS_KEY_ID=...
-# AWS_SECRET_ACCESS_KEY=...
-# AWS_STORAGE_BUCKET_NAME=...
-# AWS_S3_REGION_NAME=...
+⚠️ Never commit your `.env` file.
 
+#### Apply Migrations
 
-⚠️ Never commit your .env file.
-
-Apply Migrations
+```bash
 python manage.py migrate
+```
 
-Create Superuser
+#### Create Superuser
+
+```bash
 python manage.py createsuperuser
+```
 
-Run the Server
+#### Run the Development Server
+
+```bash
 python manage.py runserver
+```
 
-9.4 Heroku Deployment
+---
 
-This project is deployed using Heroku with Postgres.
+### 9.4 Heroku Deployment
 
-Create Heroku App
+This project is deployed using Heroku with PostgreSQL.
 
-Log into Heroku.
+#### Create the Heroku App
 
-Click New → Create New App.
+1. Log into Heroku.
+2. Click **New → Create New App**.
+3. Choose a region.
+4. Add **Heroku Postgres** under Resources.
 
-Choose a region.
+#### Set Config Vars
 
-Add Heroku Postgres under Resources.
+Go to **Settings → Reveal Config Vars** and add:
 
-Set Config Vars
-
-Go to:
-
-Settings → Reveal Config Vars
-
-Add:
-
+```
 SECRET_KEY
 DEBUG=False
-ALLOWED_HOSTS=<your-app>.herokuapp.com
-DATABASE_URL (added automatically by Heroku)
-
+ALLOWED_HOSTS=design-dock-9a1c5bd13893.herokuapp.com
+DATABASE_URL
 STRIPE_PUBLIC_KEY
 STRIPE_SECRET_KEY
 STRIPE_WH_SECRET
-
+```
 
 If using AWS S3:
 
+```
 USE_AWS=True
 AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY
 AWS_STORAGE_BUCKET_NAME
 AWS_S3_REGION_NAME
+```
 
-Deploy via GitHub
+#### Deploy via GitHub
 
-Open the Deploy tab.
+1. Open the **Deploy** tab.
+2. Connect GitHub.
+3. Select the repository `design-dock`.
+4. Choose the `main` branch.
+5. Click **Deploy Branch**.
 
-Connect GitHub.
+#### Run Migrations in Production
 
-Select repository.
-
-Choose branch (main).
-
-Click Deploy Branch or enable automatic deploys.
-
-Run Migrations in Production
-heroku run python manage.py migrate -a <your-app-name>
-
+```bash
+heroku run python manage.py migrate -a design-dock-9a1c5bd13893
+```
 
 Create admin user:
 
-heroku run python manage.py createsuperuser -a <your-app-name>
+```bash
+heroku run python manage.py createsuperuser -a design-dock-9a1c5bd13893
+```
 
-9.5 Static & Media Files (AWS S3)
+---
 
-If USE_AWS=True, static and media files are stored in an AWS S3 bucket.
+### 9.5 Static & Media Files (AWS S3)
 
-Setup overview:
+If `USE_AWS=True`, static and media files are stored in an AWS S3 bucket.
 
-Create S3 bucket
+Setup summary:
 
-Enable public read access for static files
+- Create S3 bucket
+- Enable public read access for static files
+- Add AWS credentials to Heroku Config Vars
+- Ensure bucket region matches Django settings
+- `collectstatic` runs automatically during deployment
 
-Add AWS credentials to Heroku Config Vars
+---
 
-Ensure region matches Django settings
+### 9.6 Stripe Webhooks (Production)
 
-collectstatic runs automatically during deployment
+1. Go to **Stripe Dashboard → Developers → Webhooks**
+2. Add endpoint:
 
-9.6 Stripe Webhooks (Production)
+```
+https://design-dock-9a1c5bd13893.herokuapp.com/checkout/wh/
+```
 
-To enable Stripe payments on the live site:
+3. Select:
+   - `payment_intent.succeeded`
+   - `payment_intent.payment_failed`
 
-Go to Stripe Dashboard → Developers → Webhooks
+4. Add the webhook signing secret to Heroku:
 
-Add endpoint:
-
-https://<your-app>.herokuapp.com/checkout/wh/
-
-
-Select events:
-
-payment_intent.succeeded
-
-payment_intent.payment_failed
-
-Copy webhook signing secret and add to Heroku:
-
+```
 STRIPE_WH_SECRET=whsec_...
+```
+
+---
+
+### 9.7 Production Checklist
+
+- [ ] Live site loads without errors
+- [ ] Static files load correctly
+- [ ] Stripe test payment completes successfully
+- [ ] Admin panel accessible
+- [ ] DEBUG=False in production
+- [ ] No console errors
