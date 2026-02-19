@@ -483,9 +483,6 @@ STRIPE_WH_SECRET=whsec_...
 # 11 Responsive Design
 ## Screenshots
 
-### Home Page
-![Home Page Screenshot](documentation/screenshots/home-desktop.png)
-
 ### Product Listing Page
 ![Product Listing Screenshot](documentation/screenshots/products-desktop.png)
 
