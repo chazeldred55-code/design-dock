@@ -1,8 +1,8 @@
-/* ---------------------------------------------
-   Design-Dock Theme (global)
---------------------------------------------- */
+/* =============================================
+   Design-Dock Global Theme
+============================================= */
 
-:root{
+:root {
     --dd-bg: #0b0f19;
     --dd-surface: #0f172a;
     --dd-surface-2: #111827;
@@ -18,14 +18,16 @@
     --dd-info: #38bdf8;
 }
 
-/* Keep full-height layout */
+/* =============================================
+   Base Layout
+============================================= */
+
 html,
 body {
     height: 100%;
 }
 
 body.dd-body {
-    /* Modern background (replaces boutique image look) */
     background:
         radial-gradient(1200px 600px at 20% 10%, rgba(124,58,237,.25), transparent 60%),
         radial-gradient(1000px 500px at 90% 20%, rgba(34,197,94,.18), transparent 55%),
@@ -34,21 +36,19 @@ body.dd-body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* Links */
 a {
     color: var(--dd-accent);
 }
+
 a:hover {
     color: rgba(124,58,237,.9);
     text-decoration: none;
 }
 
-/* Spacer below fixed header */
 .header-container {
-    padding-top: 96px; /* smaller, cleaner header */
+    padding-top: 96px;
 }
 
-/* Optional overlay for “white page” pages. Keep but adapt to dark */
 .overlay {
     height: 100%;
     width: 100%;
@@ -59,24 +59,15 @@ a:hover {
     z-index: -1;
 }
 
-/* Utility */
-.logo-font {
-    text-transform: uppercase;
-    letter-spacing: .08em;
-}
-.main-logo-link {
-    width: fit-content;
-}
-
-/* ---------------------------------------------
-   Design-Dock Navbar (matches base.html)
---------------------------------------------- */
+/* =============================================
+   Navbar
+============================================= */
 
 .dd-nav {
     background: rgba(15,23,42,.72);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-color: var(--dd-border) !important;
+    border-bottom: 1px solid var(--dd-border);
 }
 
 .dd-brand {
@@ -103,12 +94,19 @@ a:hover {
     letter-spacing: .02em;
 }
 
-.dd-toggler {
-    border-color: var(--dd-border) !important;
+/* Hamburger Fix */
+.dd-nav .navbar-toggler {
+    border: 1px solid rgba(255,255,255,.25) !important;
+    padding: .35rem .6rem;
 }
-.navbar-light .navbar-toggler-icon {
-    filter: invert(1);
-    opacity: .9;
+
+.dd-nav .navbar-toggler-icon {
+    filter: brightness(0) invert(1);
+    opacity: 1;
+}
+
+.dd-nav .navbar-toggler:hover {
+    background: rgba(255,255,255,.06);
 }
 
 .dd-navlinks .nav-link,
@@ -116,14 +114,10 @@ a:hover {
     color: var(--dd-text) !important;
     opacity: .88;
 }
+
 .dd-navlinks .nav-link:hover,
 .dd-actions .nav-link:hover {
     opacity: 1;
-}
-
-.dd-navicon {
-    margin-right: .35rem;
-    opacity: .9;
 }
 
 .dd-actionlink {
@@ -134,8 +128,6 @@ a:hover {
 
 .dd-total {
     font-variant-numeric: tabular-nums;
-    color: var(--dd-text);
-    opacity: .92;
 }
 
 /* Dropdown */
@@ -144,18 +136,19 @@ a:hover {
     border: 1px solid var(--dd-border);
     box-shadow: var(--dd-shadow);
 }
+
 .dd-dropdown .dropdown-item {
     color: var(--dd-text);
 }
+
 .dd-dropdown .dropdown-item:hover {
     background: rgba(255,255,255,.06);
 }
 
-/* ---------------------------------------------
-   Buttons (new theme)
---------------------------------------------- */
+/* =============================================
+   Buttons
+============================================= */
 
-/* Keep old classes working, but style them “Design-Dock” */
 .shop-now-button,
 .btn-black {
     background: var(--dd-accent);
@@ -164,36 +157,28 @@ a:hover {
 }
 
 .shop-now-button:hover,
-.shop-now-button:active,
-.shop-now-button:focus,
-.btn-black:hover,
-.btn-black:active,
-.btn-black:focus {
+.btn-black:hover {
     background: rgba(124,58,237,.92);
     color: #fff;
 }
 
-/* Outline buttons */
 .btn-outline-black {
     background: transparent;
     color: var(--dd-text) !important;
     border: 1px solid var(--dd-border);
 }
 
-.btn-outline-black:hover,
-.btn-outline-black:active,
-.btn-outline-black:focus {
+.btn-outline-black:hover {
     background: rgba(255,255,255,.06);
-    color: var(--dd-text) !important;
 }
 
-/* Optional: new button helpers you can use in templates later */
 .btn-dd-primary {
     background: var(--dd-accent);
     color: #fff !important;
     border: 1px solid rgba(124,58,237,.35);
     border-radius: 12px;
 }
+
 .btn-dd-primary:hover {
     background: rgba(124,58,237,.92);
 }
@@ -204,20 +189,15 @@ a:hover {
     border: 1px solid var(--dd-border);
     border-radius: 12px;
 }
+
 .btn-dd-outline:hover {
     background: rgba(255,255,255,.06);
 }
 
-/* Text & borders (legacy helpers) */
-.text-black {
-    color: var(--dd-text) !important;
-}
+/* =============================================
+   Cards & Utility
+============================================= */
 
-.border-black {
-    border: 1px solid var(--dd-border) !important;
-}
-
-/* Cards (optional helper) */
 .dd-card {
     background: rgba(15,23,42,.72);
     border: 1px solid var(--dd-border);
@@ -225,53 +205,23 @@ a:hover {
     box-shadow: var(--dd-shadow);
 }
 
-/* Category badges */
 .badge-white {
     background: rgba(255,255,255,.08);
     color: var(--dd-text);
     border: 1px solid var(--dd-border);
 }
 
-.category-badge > span:hover {
-    background: rgba(255,255,255,.12);
-    color: var(--dd-text) !important;
-}
-
-/* Back to top */
-.btt-button {
-    height: 42px;
-    width: 42px;
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-}
-
-.btt-link,
-.update-link,
-.remove-item {
-    cursor: pointer;
-}
-
-/* ---------------------------------------------
-   Toasts (keep working, theme colors)
---------------------------------------------- */
+/* =============================================
+   Toasts
+============================================= */
 
 .message-container {
     position: fixed;
     top: 72px;
     right: 15px;
-    z-index: 99999999999;
+    z-index: 9999;
 }
 
-.custom-toast {
-    overflow: visible;
-}
-
-.toast-capper {
-    height: 2px;
-}
-
-/* Toast arrow */
 .arrow-up {
     width: 0;
     height: 0;
@@ -283,34 +233,14 @@ a:hover {
     right: 36px;
 }
 
-/* Arrow colours */
 .arrow-success { border-bottom-color: var(--dd-accent-2); }
 .arrow-danger  { border-bottom-color: var(--dd-danger); }
 .arrow-warning { border-bottom-color: var(--dd-warning); }
 .arrow-info    { border-bottom-color: var(--dd-info); }
 
-/* Bag Notification */
-.bag-notification-wrapper {
-    max-height: 100px;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-/* ---------------------------------------------
-   Layout helpers
---------------------------------------------- */
-
-.dd-header {
-    color: var(--dd-text);
-}
-
-.dd-main {
-    min-height: calc(100vh - 120px);
-}
-
-/* ---------------------------------------------
+/* =============================================
    Media Queries
---------------------------------------------- */
+============================================= */
 
 @media (min-width: 1200px) {
     .container {
@@ -332,114 +262,8 @@ a:hover {
     }
 }
 
-/* ---------------------------------------------
-   Allauth (keep, but theme)
---------------------------------------------- */
-
-.allauth-form-inner-content p {
-    margin-top: 1rem;
-    color: var(--dd-muted);
-}
-
-.allauth-form-inner-content input,
-.allauth-form-inner-content select,
-.allauth-form-inner-content textarea {
-    border: 1px solid var(--dd-border);
-    border-radius: 12px;
-    background: rgba(255,255,255,.04);
-    color: var(--dd-text);
-}
-
-.allauth-form-inner-content label:not([for="id_remember"]) {
-    display: none;
-}
-
-::placeholder {
-    color: rgba(229,231,235,.6);
-    opacity: 1;
-}
-
-.allauth-form-inner-content button,
-.allauth-form-inner-content input[type="submit"] {
-    display: inline-block;
-    font-weight: 600;
-    color: #fff;
-    background-color: var(--dd-accent);
-    border: 1px solid rgba(124,58,237,.35);
-    border-radius: 12px;
-    padding: 0.5rem 0.9rem;
-}
-
-.allauth-form-inner-content button:hover,
-.allauth-form-inner-content input[type="submit"]:hover {
-    background-color: rgba(124,58,237,.92);
-}
-
-/* Allauth links */
-.allauth-form-inner-content a {
-    color: var(--dd-info);
-}
-
-/* --- Custom Clearable File Input (Product image widget) --- */
-.btn-file {
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-file input[type="file"] {
-    position: absolute;
-    top: 0;
-    right: 0;
-    min-width: 100%;
-    min-height: 100%;
-    opacity: 0;
-    cursor: pointer;
-}
-
-/* Danger checkbox */
-.custom-control-input:checked ~ .custom-control-label::before {
-    background-color: var(--dd-danger);
-    border-color: var(--dd-danger);
-    border-radius: 8px;
-}
-
-/* Extra small devices */
 @media (max-width: 320px) {
-    .display-4.logo-font {
-        font-size: 2rem;
-    }
-
-    .nav-link {
-        padding: 0.15rem;
-    }
-
-    .fa-lg {
-        font-size: 1rem;
-    }
-
     .navbar-toggler {
-        padding: 0.2rem 0.4rem;
-        font-size: 1rem;
-    }
-
-    #delivery-banner h4 {
-        font-size: 0.9rem;
-    }
-
-    .btn.btn-outline-black.rounded-0,
-    .btn.btn-black.rounded-0 {
-        padding: 0.375rem 0.375rem;
-        font-size: 0.75rem;
-    }
-
-    .btn.btn-black.rounded-0.btn-lg,
-    .btn.btn-outline-black.rounded-0.btn-lg {
-        padding: 0.375rem 0.375rem;
-        font-size: 0.75rem;
-    }
-
-    .increment-qty,
-    .decrement-qty {
-        padding: 0.25rem 0.5rem !important;
+        padding: .25rem .5rem;
     }
 }
