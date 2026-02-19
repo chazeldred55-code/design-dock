@@ -18,7 +18,8 @@ Design Dock is a full-stack e-commerce platform built with Django that allows us
 7. [Database Design](#7-database-design)  
 8. [Technologies Used](#8-technologies-used)  
 9. [Testing](#9-testing)  
-10. [Deployment](#10-deployment)  
+10. [Deployment](#10-deployment)
+11. [Responsive_Design](#11-responsive-design)  
 
 ---
 
@@ -479,3 +480,63 @@ STRIPE_WH_SECRET=whsec_...
 - [ ] Admin panel accessible
 - [ ] DEBUG=False in production
 - [ ] No console errors
+# 11 Responsive Design
+## Screenshots
+
+### Home Page
+![Home Page Screenshot](documentation/screenshots/home-desktop.png)
+
+### Product Listing Page
+![Product Listing Screenshot](documentation/screenshots/products-desktop.png)
+
+### Product Detail Page
+![Product Detail Screenshot](documentation/screenshots/product-detail-desktop.png)
+
+### Shopping Bag
+![Shopping Bag Screenshot](documentation/screenshots/bag-desktop.png)
+
+### Checkout Page
+![Checkout Screenshot](documentation/screenshots/checkout-desktop.png)
+
+### Admin Panel
+![Admin Panel Screenshot](documentation/screenshots/admin-dashboard.png)
+
+---
+
+## Responsive Design
+
+The website has been fully tested across multiple screen sizes to ensure a seamless user experience on desktop, tablet, and mobile devices.
+
+### Desktop View (992px and above)
+
+- Multi-column product grid layout  
+- Full navigation bar displayed  
+- Side-by-side checkout form layout  
+- Optimised spacing for large screens  
+
+![Desktop View](documentation/screenshots/responsive-desktop.png)
+
+---
+
+### Tablet View (768px – 991px)
+
+- Reduced product grid columns  
+- Adjusted spacing and margins  
+- Optimised touch targets  
+- Navigation adapted for medium screens  
+
+![Tablet View](documentation/screenshots/responsive-tablet.png)
+
+---
+
+### Mobile View (767px and below)
+
+- Single-column layout  
+- Collapsible mobile navigation menu  
+- Full-width buttons for accessibility  
+- Stacked checkout form layout  
+- Optimised for touch interaction  
+
+![Mobile View](documentation/screenshots/responsive-mobile.png)
+
+---
