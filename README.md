@@ -107,6 +107,22 @@ Core e-commerce functionality was implemented first (Must Have), followed by usa
 
 ![Project Board](documentation/project-board.png)
 
+### Development Iterations
+
+Iteration 1 – Core Product Display
+- Product listing
+- Product detail
+
+Iteration 2 – E-commerce Flow
+- Add to bag
+- Shopping bag
+- Stripe checkout
+
+Iteration 3 – Admin & Deployment
+- Product CRUD
+- Profile
+- Error pages
+
 # 5. Features
 
 ### 🔐 Authentication
