@@ -597,8 +597,10 @@ All wireframes are stored in:
 ---
 
 ### ✅ Checkout Success Page
-
+**Mobile**
 ![Checkout Success](documentation/wireframes/checkout-success-mobile.png)
+
+**Desktop**
 ![Checkout Success](documentation/wireframes/checkout-success-desktop.png)
 ---
 
