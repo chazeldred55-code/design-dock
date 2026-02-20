@@ -97,8 +97,15 @@ The checkout process was designed to be linear and distraction-free to reduce dr
 # 4. Agile Methodology
 
 A GitHub Projects board was used to track user stories, development tasks, bugs, and feature implementation. Development followed an iterative approach with incremental feature builds and clear commit messages.
+## Agile Development Process
 
----
+Development followed an iterative Agile methodology using GitHub Projects.
+
+User stories were created as issues and prioritised using MoSCoW (Must, Should, Could, Won’t).
+
+Core e-commerce functionality was implemented first (Must Have), followed by usability enhancements.
+
+![Project Board](documentation/project-board.png)
 
 # 5. Features
 
