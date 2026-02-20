@@ -598,8 +598,8 @@ All wireframes are stored in:
 
 ### ✅ Checkout Success Page
 
-![Checkout Success](documentation/wireframes/checkout-success.png)
-
+![Checkout Success](documentation/wireframes/checkout-success-mobile.png)
+![Checkout Success](documentation/wireframes/checkout-success-desktop.png)
 ---
 
 ### 👤 Profile Page
