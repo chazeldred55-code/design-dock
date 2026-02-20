@@ -20,7 +20,7 @@ Design Dock is a full-stack e-commerce platform built with Django that allows us
 9. [Testing](#9-testing)  
 10. [Deployment](#10-deployment)
 11. [Responsive_Design](#11-responsive-design)  
-
+12. [Wireframes](#12-wireframes)
 ---
 
 # 1. Project Overview
@@ -536,4 +536,86 @@ The website has been fully tested across multiple screen sizes to ensure a seaml
 
 ![Mobile View](documentation/screenshots/responsive-mobile.png)
 
+# 12. Wireframes
+
+Wireframes were created during the planning phase to define layout structure, user flow, and responsive behaviour before development began. Low-fidelity mockups were produced to focus on functionality and layout before styling and development.
+
+All wireframes are stored in:
+
+`documentation/wireframes/`
+
 ---
+
+### 🏠 Home Page
+
+**Desktop**
+![Home Desktop](documentation/wireframes/home-desktop.png)
+
+**Mobile**
+![Home Mobile](documentation/wireframes/home-mobile.png)
+
+---
+
+### 🛍️ Products Page
+
+**Desktop**
+![Products Desktop](documentation/wireframes/products-desktop.png)
+
+**Mobile**
+![Products Mobile](documentation/wireframes/products-mobile.png)
+
+---
+
+### 📦 Product Detail Page
+
+**Desktop**
+![Product Detail Desktop](documentation/wireframes/product-detail-desktop.png)
+
+**Mobile**
+![Product Detail Mobile](documentation/wireframes/product-detail-mobile.png)
+
+---
+
+### 🛒 Shopping Bag Page
+
+**Desktop**
+![Bag Desktop](documentation/wireframes/bag-desktop.png)
+
+**Mobile**
+![Bag Mobile](documentation/wireframes/bag-mobile.png)
+
+---
+
+### 💳 Checkout Page
+
+**Desktop**
+![Checkout Desktop](documentation/wireframes/checkout-desktop.png)
+
+**Mobile**
+![Checkout Mobile](documentation/wireframes/checkout-mobile.png)
+
+---
+
+### ✅ Checkout Success Page
+
+![Checkout Success](documentation/wireframes/checkout-success.png)
+
+---
+
+### 👤 Profile Page
+
+**Desktop**
+![Profile Desktop](documentation/wireframes/profile-desktop.png)
+
+**Mobile**
+![Profile Mobile](documentation/wireframes/profile-mobile.png)
+
+---
+
+### 🔐 Authentication Pages
+
+**Login**
+![Login Wireframe](documentation/wireframes/login.png)
+
+**Register**
+![Register Wireframe](documentation/wireframes/register.png)
