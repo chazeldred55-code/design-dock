@@ -196,14 +196,15 @@ A GitHub Projects board was used to track user stories, development tasks, bugs,
 
 ## Manual Testing
 
-| Feature | Expected Result | Pass |
-|----------|----------------|------|
-| Add to bag | Item added correctly | ✅ |
-| Update quantity | Quantity updates | ✅ |
-| Remove item | Item removed | ✅ |
-| Stripe payment | Payment succeeds | ✅ |
-| Webhook | Order confirmed | ✅ |
-| Admin CRUD | Product changes persist | ✅ |
+## Manual Testing
+
+| Feature | Test Performed | Expected Result | Result |
+|----------|----------------|----------------|--------|
+| Add to Bag | Clicked “Add to Bag” on product page | Product added to bag | ✅ Pass |
+| Update Quantity | Increased quantity in bag | Quantity updated correctly | ✅ Pass |
+| Remove Item | Clicked remove button | Item removed from bag | ✅ Pass |
+| Secure Checkout | Completed Stripe payment | Order processed & confirmation shown | ✅ Pass |
+| Admin Product CRUD | Created/Edited/Deleted product in admin | Product updated in database | ✅ Pass |
 
 ### Manual Testing Evidence
 ### Manual Testing Evidence
