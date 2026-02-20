@@ -207,7 +207,6 @@ A GitHub Projects board was used to track user stories, development tasks, bugs,
 | Admin Product CRUD | Created/Edited/Deleted product in admin | Product updated in database | ✅ Pass |
 
 ### Manual Testing Evidence
-### Manual Testing Evidence
 
 The following screenshots demonstrate successful manual testing of core functionality:
 
