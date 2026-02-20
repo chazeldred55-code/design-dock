@@ -612,10 +612,3 @@ All wireframes are stored in:
 
 ---
 
-### 🔐 Authentication Pages
-
-**Login**
-![Login Wireframe](documentation/wireframes/login.png)
-
-**Register**
-![Register Wireframe](documentation/wireframes/register.png)
