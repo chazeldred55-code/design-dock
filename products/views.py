@@ -13,8 +13,9 @@ def all_products(request):
     """A view to show all products, including sorting and search queries"""
 
     products = Product.objects.all()
+    all_categories = Category.objects.all()  # ✅ FIXED
+
     query = None
-    categories = None
     current_categories = None
     sort = None
     direction = None
@@ -52,16 +53,15 @@ def all_products(request):
 
         # Category filtering
         if 'category' in request.GET:
-            categories = request.GET['category']
-            if categories:
-                categories = categories.split(',')
-                products = products.filter(category__name__in=categories)
-                current_categories = Category.objects.filter(name__in=categories)
+            selected_categories = request.GET['category'].split(',')
+            products = products.filter(category__name__in=selected_categories)
+            current_categories = Category.objects.filter(name__in=selected_categories)
 
     current_sorting = f'{sort}_{direction}'
 
     context = {
         'products': products,
+        'categories': all_categories,  # ✅ FIXED
         'search_term': query,
         'current_categories': current_categories,
         'current_sorting': current_sorting,
@@ -82,6 +82,7 @@ def product_detail(request, product_id):
     return render(request, 'products/product_detail.html', context)
 
 
+@login_required
 def add_product(request):
     """Add a product to the store."""
 
@@ -107,6 +108,7 @@ def add_product(request):
     return render(request, template, context)
 
 
+@login_required
 def edit_product(request, product_id):
     """Edit a product in the store."""
 
