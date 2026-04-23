@@ -306,6 +306,21 @@ Lighthouse audits were run in Chrome DevTools with cache disabled.
 #### Checkout
 ![Checkout Validation](documentation/W3C-Validator/html-checkout-pass.png)
 
+
+### Bug: Category filtering not working
+
+**Issue:**  
+Category buttons were visible but did not trigger filtering.
+
+**Root Cause:**  
+- Category links were missing query parameters  
+- UI was placed outside Django `{% block content %}`  
+- Categories variable was overwritten in the view
+
+**Fix:**  
+- Implemented query-based filtering (`?category=...`)  
+- Moved UI inside correct template block  
+- Refactored variable naming to avoid collisions
 ---
 
 # 10. Deployment
