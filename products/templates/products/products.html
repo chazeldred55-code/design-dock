@@ -14,6 +14,31 @@
 
 <div class="container-fluid">
 
+  <!-- CATEGORY FILTER -->
+  <div class="row mt-3">
+    <div class="col text-center">
+
+      <a href="{% url 'products' %}"
+         class="btn btn-sm btn-outline-secondary m-1">
+         All
+      </a>
+
+      {% for category in categories %}
+        <a href="{% url 'products' %}?category={{ category.name }}"
+           class="btn btn-sm m-1
+           {% if current_categories and category in current_categories %}
+              btn-dark
+           {% else %}
+              btn-outline-dark
+           {% endif %}">
+           
+           {{ category.friendly_name|default:category.name }}
+        </a>
+      {% endfor %}
+
+    </div>
+  </div>
+
   <!-- Page Title -->
   <div class="row">
     <div class="col text-center mt-4">
@@ -109,7 +134,6 @@
             <div class="p-3">
 
               <div class="d-flex justify-content-between align-items-start">
-                <!-- FIXED HEADING LEVEL -->
                 <h3 class="h6 mb-1" style="font-weight:800; color:var(--dd-text);">
                   {{ product.name }}
                 </h3>
