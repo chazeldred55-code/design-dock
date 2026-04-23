@@ -23,24 +23,30 @@ Design Dock is a full-stack e-commerce platform built with Django that allows us
 12. [Wireframes](#12-wireframes)
 ---
 
-# 1. Project Overview
+## 1. Project Overview
 
 ### 🧠 Purpose
-Design Dock was created to provide designers and creatives with a curated marketplace for design resources and merchandise.
+Design Dock is a Django-based e-commerce platform that enables users to browse a structured product catalogue, manage a session-backed cart, and complete purchases through an integrated payment flow.
+
+### ⚙️ System Overview
+The application follows a server-rendered architecture using Django templates and views, with a relational database managing products, categories, and orders.
+
+Core flow:
+1. Users browse products via the catalogue (`/products/`)
+2. Products can be added to a session-based cart
+3. Cart state is updated dynamically across requests
+4. Users proceed to checkout and complete payment
+5. Orders are created and persisted post-payment
 
 ### 🎯 Site Owner Goals
-- Sell design-related products  
-- Manage inventory and categories  
-- Process secure payments  
-- Provide a professional e-commerce experience  
+- Maintain a structured product catalogue via admin panel
+- Enable reliable checkout and order processing
+- Provide a clean, responsive storefront experience
 
 ### 👤 User Goals
-- Browse products  
-- Filter and search items  
-- Add products to a shopping bag  
-- Securely checkout  
-- Manage account details and view order history  
-
+- Discover and browse products efficiently
+- Add/remove items from cart with clear feedback
+- Complete purchases securely with minimal friction
 ---
 
 # 2. User Experience (UX)
