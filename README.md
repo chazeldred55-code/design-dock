@@ -15,12 +15,15 @@ Design Dock is a full-stack e-commerce platform built with Django that allows us
 4. [Agile Methodology](#4-agile-methodology)  
 5. [Features](#5-features)  
 6. [Future Features](#6-future-features)  
-7. [Database Design](#7-database-design)  
-8. [Technologies Used](#8-technologies-used)  
-9. [Testing](#9-testing)  
-10. [Deployment](#10-deployment)
-11. [Responsive_Design](#11-responsive-design)  
-12. [Wireframes](#12-wireframes)
+7. [Database Design](#7-database-design)
+8. [Technologies](#8-technologies)
+9. [Technological Decisions](#9-technological-decisions)
+10. [Testing](#10-testing)  
+11. [Deployment](#11-deployment)
+12. [Security & Defensive Programming](#12-security-&-defensive-programming)
+13. [Responsive Design](#13-resppnsive-design)  
+14. [Wireframes](#14-wireframes)
+15. [Credits](#15-credits)
 ---
 
 ## 1. Project Overview
@@ -192,8 +195,13 @@ Iteration 3 – Admin & Deployment
 - Order → UserProfile (ForeignKey)  
 - OrderLineItem → Product (ForeignKey)  
 - OrderLineItem → Order (ForeignKey)  
+### Design Rationale
 
----
+The database structure was designed to separate concerns between products, orders, and user profiles.
+
+Using an `OrderLineItem` model allows multiple products to be linked to a single order, ensuring scalability and accurate order tracking.
+
+Foreign key relationships enforce referential integrity and prevent orphaned records.
 
 # 8. Technologies Used
 
@@ -217,13 +225,26 @@ Iteration 3 – Admin & Deployment
 ### Deployment & Storage
 - Heroku  
 - AWS S3  
-- GitHub  
+- GitHub
 
----
+## 9. Technical Decisions
 
-# 9. Testing
+### Framework Choice
+Django was selected as the backend framework due to its built-in authentication system, ORM, and scalability for relational data models. This enabled rapid development while maintaining structured and secure data handling.
 
-## Manual Testing
+### Cart Implementation
+A session-based cart was used instead of storing cart data in the database. This reduces unnecessary database writes and improves performance before checkout is completed.
+
+### Payment Processing
+Stripe PaymentIntent was implemented to handle secure transactions. This approach ensures that payments are confirmed server-side via webhooks, preventing fraudulent or incomplete transactions.
+
+### Database Design
+A relational database structure was used to maintain clear relationships between products, orders, and users. Foreign key relationships ensure data integrity and consistency.
+
+### Deployment Strategy
+Heroku was used for deployment due to its ease of integration with Django and PostgreSQL. AWS S3 was used for static and media file storage to improve scalability and performance.
+
+# 10. Testing
 
 ## Manual Testing
 
@@ -313,17 +334,20 @@ Lighthouse audits were run in Chrome DevTools with cache disabled.
 Category buttons were visible but did not trigger filtering.
 
 **Root Cause:**  
-- Category links were missing query parameters  
-- UI was placed outside Django `{% block content %}`  
-- Categories variable was overwritten in the view
+- Missing query parameters in URLs  
+- Template block misplacement  
+- Variable naming conflict in view logic  
 
-**Fix:**  
-- Implemented query-based filtering (`?category=...`)  
-- Moved UI inside correct template block  
-- Refactored variable naming to avoid collisions
+**Resolution:**  
+- Implemented query-based filtering (`?category=`)  
+- Corrected template structure  
+- Refactored context variables  
+
+**Learning Outcome:**  
+This highlighted the importance of maintaining consistent data flow between templates and views, and avoiding variable shadowing in Django contexts.
 ---
 
-# 10. Deployment
+# 11. Deployment
 
 
 This project can be run locally for development and deployed to Heroku for production.
@@ -524,7 +548,20 @@ STRIPE_WH_SECRET=whsec_...
 - [ ] Admin panel accessible
 - [ ] DEBUG=False in production
 - [ ] No console errors
-# 11 Responsive Design
+
+## 12. Security & Defensive Programming
+
+The application includes several security and defensive programming practices:
+
+- Sensitive data is stored in environment variables and never committed to the repository
+- `DEBUG=False` is enforced in production
+- Django CSRF protection is enabled for all forms
+- Authentication is required for checkout and profile access
+- Admin functionality is restricted to authorised users only
+- Stripe webhook signatures are verified to ensure secure payment confirmation
+- Input validation is handled via Django forms to prevent invalid or malicious data
+
+## 11. Responsive Design
 ## Screenshots
 
 ### Product Listing Page
@@ -580,7 +617,7 @@ The website has been fully tested across multiple screen sizes to ensure a seaml
 
 ![Mobile View](documentation/screenshots/responsive-mobile.png)
 
-# 12. Wireframes
+## 12. Wireframes
 
 Wireframes were created during the planning phase to define layout structure, user flow, and responsive behaviour before development began. Low-fidelity mockups were produced to focus on functionality and layout before styling and development.
 
@@ -656,5 +693,17 @@ All wireframes are stored in:
 **Mobile**
 ![Profile Mobile](documentation/wireframes/profile-mobile.png)
 
----
+## Credits
+
+### Code
+- Django Documentation  
+- Stripe Documentation  
+- Code Institute Boutique Ado walkthrough (adapted structure)
+
+### Media
+- Images created for project use  
+- Icons from Font Awesome  
+
+### Acknowledgements
+- Code Institute mentors and support resources
 
