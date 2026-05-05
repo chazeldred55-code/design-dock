@@ -256,6 +256,7 @@ Heroku was used for deployment due to its ease of integration with Django and Po
 | Secure Checkout | Completed Stripe payment | Order processed & confirmation shown | ✅ Pass |
 | Admin Product CRUD | Created/Edited/Deleted product in admin | Product updated in database | ✅ Pass |
 | Invalid Payment Input | Entered incomplete card details | Validation error displayed | ✅ Pass |
+| Failed Payment | Used Stripe test card (4000 0000 0000 0002) | Payment rejected and error displayed | ✅ Pass |
 
 ### Manual Testing Evidence
 
@@ -330,6 +331,9 @@ Lighthouse audits were run in Chrome DevTools with cache disabled.
 
 #### 💳 Invalid Payment Input
 ![Invalid Payment](documentation/Manual-Testing/manual-payment-invalid.png)
+
+#### 💳 Payment Failure
+![Payment Failure](documentation/Manual-Testing/manual-payment-failed.png)
 
 ### Bug: Category filtering not working
 
