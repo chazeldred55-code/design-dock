@@ -353,7 +353,34 @@ Category buttons were visible but did not trigger filtering.
 **Learning Outcome:**  
 This highlighted the importance of maintaining consistent data flow between templates and views, and avoiding variable shadowing in Django contexts.
 ---
+### Bug: Product images not displaying after AWS S3 migration
 
+#### Issue
+Product images were not rendering in the product pages, shopping bag, checkout flow, or Django admin after migrating static and media storage to AWS S3.
+
+#### Root Cause
+The Django `ImageField` entries still contained image filenames, but the actual media files were no longer properly associated with the S3-backed storage system.
+
+Additionally, the fallback placeholder image (`noimage.png`) had not initially been uploaded to AWS S3 static storage.
+
+#### Resolution
+- Verified AWS S3 bucket configuration and permissions
+- Confirmed Django static/media storage settings
+- Re-ran `collectstatic` to upload static assets
+- Corrected Django admin product access configuration
+- Re-uploaded product images through Django admin to restore valid `ImageField` associations
+- Verified successful rendering across products, bag, checkout, and admin pages
+
+#### Before
+![Broken Product Images](documentation/bugs/s3-images-before.png)
+
+![Admin Image Reupload](documentation/bugs/admin-image-reupload.png)
+
+#### After
+![Fixed Product Images](documentation/bugs/s3-images-after.png)
+
+#### Learning Outcome
+This issue reinforced the importance of understanding the distinction between database file references and actual cloud-stored media assets when deploying Django applications with AWS S3.
 # 11. Deployment
 
 
