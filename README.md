@@ -388,7 +388,7 @@ This project can be run locally for development and deployed to Heroku for produ
 
 ---
 
-### 10.1 Forking the Repository
+### Forking the Repository
 
 1. Log in to GitHub.
 2. Navigate to the Design Dock repository.
@@ -397,7 +397,7 @@ This project can be run locally for development and deployed to Heroku for produ
 
 ---
 
-### 10.2 Cloning the Repository
+### Cloning the Repository
 
 1. Open your forked repository.
 2. Click **Code** and copy the HTTPS URL.
@@ -410,7 +410,7 @@ cd design-dock
 
 ---
 
-### 10.3 Local Development Setup
+###  Local Development Setup
 
 #### Prerequisites
 
@@ -482,7 +482,7 @@ python manage.py runserver
 
 ---
 
-### 10.4 Heroku Deployment
+###  Heroku Deployment
 
 This project is deployed using Heroku with PostgreSQL.
 
@@ -539,7 +539,7 @@ heroku run python manage.py createsuperuser -a design-dock-9a1c5bd13893
 
 ---
 
-### 10.5 Static & Media Files (AWS S3)
+### Static & Media Files (AWS S3)
 
 If `USE_AWS=True`, static and media files are stored in an AWS S3 bucket.
 
@@ -553,7 +553,7 @@ Setup summary:
 
 ---
 
-### 10.6 Stripe Webhooks (Production)
+###  Stripe Webhooks (Production)
 
 1. Go to **Stripe Dashboard → Developers → Webhooks**
 2. Add endpoint:
@@ -574,7 +574,7 @@ STRIPE_WH_SECRET=whsec_...
 
 ---
 
-### 10.7 Production Checklist
+### Production Checklist
 
 - [ ] Live site loads without errors
 - [ ] Static files load correctly
@@ -666,7 +666,7 @@ To run the automated tests locally:
 ```bash
 python manage.py test
 
-## 12. Wireframes
+# Wireframe
 
 Wireframes were created during the planning phase to define layout structure, user flow, and responsive behaviour before development began. Low-fidelity mockups were produced to focus on functionality and layout before styling and development.
 
