@@ -244,7 +244,7 @@ A relational database structure was used to maintain clear relationships between
 ### Deployment Strategy
 Heroku was used for deployment due to its ease of integration with Django and PostgreSQL. AWS S3 was used for static and media file storage to improve scalability and performance.
 
-# 10. Testing
+# 10. Deployment
 
 ## Manual Testing
 
@@ -381,7 +381,7 @@ Additionally, the fallback placeholder image (`noimage.png`) had not initially b
 
 #### Learning Outcome
 This issue reinforced the importance of understanding the distinction between database file references and actual cloud-stored media assets when deploying Django applications with AWS S3.
-# 11. Deployment
+# 11. Testing
 
 
 This project can be run locally for development and deployed to Heroku for production.
