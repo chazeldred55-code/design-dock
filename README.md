@@ -651,6 +651,21 @@ The website has been fully tested across multiple screen sizes to ensure a seaml
 
 ![Mobile View](documentation/screenshots/responsive-mobile.png)
 
+### 🔹 Automated Testing
+
+To ensure reliability and maintainability, automated testing was implemented using Django’s built-in testing framework.
+
+#### Framework Used
+- Django `TestCase`
+- Django test client for simulating requests
+
+#### Running the Tests
+
+To run the automated tests locally:
+
+```bash
+python manage.py test
+
 ## 12. Wireframes
 
 Wireframes were created during the planning phase to define layout structure, user flow, and responsive behaviour before development began. Low-fidelity mockups were produced to focus on functionality and layout before styling and development.
