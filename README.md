@@ -583,6 +583,24 @@ STRIPE_WH_SECRET=whsec_...
 - [ ] DEBUG=False in production
 - [ ] No console errors
 
+### 🔹 Automated Testing
+
+To ensure reliability and maintainability, automated testing was implemented using Django’s built-in testing framework.
+
+#### Framework Used
+- Django `TestCase`
+- Django test client
+
+#### Running the Tests
+
+```bash
+python manage.py test
+#### Test Results
+
+All automated tests were executed successfully using Django’s test runner:
+
+![Automated Test Results](documentation/testing/automated-tests.png)
+
 ## 12. Security & Defensive Programming
 
 The application includes several security and defensive programming practices:
