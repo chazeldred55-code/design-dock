@@ -399,7 +399,6 @@ python manage.py test
 All automated tests were executed successfully using Django’s test runner:
 
 ![Automated Test Results](documentation/testing/automated-tests.png)
-# 11. Testing
 
 
 This project can be run locally for development and deployed to Heroku for production.
@@ -615,7 +614,7 @@ The application includes several security and defensive programming practices:
 - Stripe webhook signatures are verified to ensure secure payment confirmation
 - Input validation is handled via Django forms to prevent invalid or malicious data
 
-## 11. Responsive Design
+## 13. Responsive Design
 ## Screenshots
 
 ### Product Listing Page
@@ -634,8 +633,6 @@ The application includes several security and defensive programming practices:
 ![Admin Panel Screenshot](documentation/screenshots/admin-dashboard.png)
 
 ---
-
-## Responsive Design
 
 The website has been fully tested across multiple screen sizes to ensure a seamless user experience on desktop, tablet, and mobile devices.
 
@@ -671,22 +668,7 @@ The website has been fully tested across multiple screen sizes to ensure a seaml
 
 ![Mobile View](documentation/screenshots/responsive-mobile.png)
 
-### 🔹 Automated Testing
-
-To ensure reliability and maintainability, automated testing was implemented using Django’s built-in testing framework.
-
-#### Framework Used
-- Django `TestCase`
-- Django test client for simulating requests
-
-#### Running the Tests
-
-To run the automated tests locally:
-
-```bash
-python manage.py test
-
-# Wireframe
+## 14. Wireframes
 
 Wireframes were created during the planning phase to define layout structure, user flow, and responsive behaviour before development began. Low-fidelity mockups were produced to focus on functionality and layout before styling and development.
 
@@ -762,7 +744,7 @@ All wireframes are stored in:
 **Mobile**
 ![Profile Mobile](documentation/wireframes/profile-mobile.png)
 
-## Credits
+## 15. Credits
 
 ### Code
 - Django Documentation  
