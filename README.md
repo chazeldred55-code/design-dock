@@ -384,7 +384,7 @@ This issue reinforced the importance of understanding the distinction between da
 
 ### 🔹 Automated Testing
 
-To ensure reliability and maintainability, automated testing was implemented using Django’s built-in testing framework.
+Automated testing was used to validate core functionality and ensure future changes do not introduce regressions.
 
 #### Framework Used
 - Django `TestCase`
