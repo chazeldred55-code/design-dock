@@ -381,12 +381,7 @@ Additionally, the fallback placeholder image (`noimage.png`) had not initially b
 
 #### Learning Outcome
 This issue reinforced the importance of understanding the distinction between database file references and actual cloud-stored media assets when deploying Django applications with AWS S3.
-# 11. Testing
 
-
-This project can be run locally for development and deployed to Heroku for production.
-
----
 ### 🔹 Automated Testing
 
 To ensure reliability and maintainability, automated testing was implemented using Django’s built-in testing framework.
@@ -404,6 +399,13 @@ python manage.py test
 All automated tests were executed successfully using Django’s test runner:
 
 ![Automated Test Results](documentation/testing/automated-tests.png)
+# 11. Testing
+
+
+This project can be run locally for development and deployed to Heroku for production.
+
+---
+
 
 ### Forking the Repository
 
