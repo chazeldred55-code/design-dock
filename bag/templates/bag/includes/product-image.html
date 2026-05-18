@@ -2,13 +2,8 @@
 {% load static %}
 
 <div class="col-12 col-sm-3">
-    {% if item.product.image %}
-        <img class="img-fluid rounded"
-             src="{{ item.product.image.url }}"
-             alt="{{ item.product.name }}">
-    {% else %}
-        <img class="img-fluid rounded"
-             src="{% static 'images/noimage.png' %}"
-             alt="{{ item.product.name }}">
-    {% endif %}
+    <img class="img-fluid rounded"
+         src="{% if item.product.image %}{{ item.product.image.url }}{% else %}{% static 'images/noimage.png' %}{% endif %}"
+         alt="{{ item.product.name }}"
+         onerror="this.onerror=null;this.src='{% static 'images/noimage.png' %}';">
 </div>
