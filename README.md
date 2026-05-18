@@ -394,11 +394,8 @@ Automated testing was used to validate core functionality and ensure future chan
 
 ```bash
 python manage.py test
-#### Test Results
 
-All automated tests were executed successfully using Django’s test runner:
-
-![Automated Test Results](documentation/testing/automated-tests.png)
+![Automated Test Results](documentation/Testing/automated-tests.png)
 
 
 This project can be run locally for development and deployed to Heroku for production.
