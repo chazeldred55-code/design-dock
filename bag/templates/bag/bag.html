@@ -60,19 +60,13 @@
           <div class="p-3" style="border-bottom: 1px solid var(--dd-border);">
             <div class="row align-items-center">
 
-              <!-- Image -->
+              <!-- Image (FIXED) -->
               <div class="col-2">
-                {% if item.product.image %}
-                  <img class="img-fluid"
-                       src="{{ item.product.image.url }}"
-                       alt="{{ item.product.name }}"
-                       style="border-radius: 14px; border: 1px solid var(--dd-border);">
-                {% else %}
-                  <img class="img-fluid"
-                       src="{% static 'images/noimage.png' %}"
-                       alt="{{ item.product.name }}"
-                       style="border-radius: 14px; border: 1px solid var(--dd-border);">
-                {% endif %}
+                <img class="img-fluid"
+                     src="{% if item.product.image %}{{ item.product.image.url }}{% else %}{% static 'images/noimage.png' %}{% endif %}"
+                     alt="{{ item.product.name }}"
+                     style="border-radius: 14px; border: 1px solid var(--dd-border);"
+                     onerror="this.onerror=null;this.src='{% static 'images/noimage.png' %}';">
               </div>
 
               <!-- Details -->
@@ -143,7 +137,6 @@
          ========================= -->
     <div class="d-block d-md-none">
 
-      <!-- Totals + Buttons at top (mobile UX) -->
       <div class="dd-card p-4 mb-3">
         {% include "bag/includes/bag-total.html" %}
         <div class="text-right mt-3">
@@ -162,7 +155,6 @@
             {% include "bag/includes/product-image.html" %}
             {% include "bag/includes/product-info.html" %}
 
-            <!-- Unit price + subtotal -->
             <div class="col-12 col-sm-3 mt-3 mt-sm-0">
               <p class="mb-1" style="color: var(--dd-muted); font-size: .92rem;">
                 Unit price:
@@ -173,7 +165,6 @@
               </p>
             </div>
 
-            <!-- Quantity -->
             {% include "bag/includes/quantity-form.html" %}
 
           </div>
@@ -181,7 +172,6 @@
         </div>
       {% endfor %}
 
-      <!-- Back to top -->
       <div class="btt-button shadow-sm rounded-0"
            style="background: rgba(255,255,255,.06); border: 1px solid var(--dd-border);">
         <a class="btt-link d-flex h-100">
@@ -213,8 +203,6 @@
   {% include "bag/includes/quantity_input_script.html" %}
 
   <script>
-
-    // Back to top
     $(".btt-link").click(function (e) {
       e.preventDefault();
       window.scrollTo(0, 0);
